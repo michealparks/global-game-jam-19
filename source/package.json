@@ -1,0 +1,18 @@
+{
+  "name": "global-game-jam-19",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/electron.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "electron --js-flags=\"--use_strict\" main.js dev",
+    "build": "node --use-strict webpack prod"
+  },
+  "author": "Micheal Parks",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^4.0.2",
+    "three": "^0.100.0",
+    "webpack": "^4.29.0"
+  }
+}
