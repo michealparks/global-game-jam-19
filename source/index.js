@@ -12,7 +12,6 @@ const onFatalCrash = (e) => {
   if (__dev__) console.error(e.stack)
 
   process.exit(1)
-  // TODO
 }
 
 app.on('gpu-process-crashed', onFatalCrash)
@@ -22,7 +21,7 @@ app.requestSingleInstanceLock()
 app.on('second-instance', () => win && win.focus())
 
 if (__dev__) {
-  require('./bin/webpack')
+  require('./webpack')
 }
 
 app.commandLine.appendSwitch('enable-precise-memory-info')
@@ -43,7 +42,6 @@ app.once('ready', () => {
     titleBarStyle: 'hidden',
     webPreferences: {
       nodeIntegration: false,
-      // preload: resolve(__dirname, 'preload.js'),
       backgroundThrottling: false
     }
   })
