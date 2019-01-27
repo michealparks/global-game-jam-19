@@ -27,7 +27,8 @@ body {
   filter: grayscale(1.0);
 }
 
-#inspiration, #bottomtext {
+#inspiration,
+#bottomtext {
   z-index: 1;
   position: absolute;
   bottom: 10%;
@@ -41,14 +42,26 @@ body {
   bottom: calc(10% - 48px);
 }
 
+#furylevel-container,
 #furylevel {
   z-index: 1;
   position: absolute;
+}
+
+#furylevel-container {
   top: 10%;
-  left: 5%;
-  width: 100px;
-  height: 20px;
-  background: red;
+  left: calc(50% - 75px);
+  width: 150px;
+  height: 40px;
+  border: 7px solid #b71c1c;
+}
+
+#furylevel {
+  top: -1px;
+  left: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  background: #f44336;
   transform-origin: 0% 50%;
 }
 </style>
@@ -57,6 +70,8 @@ body {
 
 <div id='inspiration'></div>
 <div id='bottomtext'></div>
-<div id='furylevel'></div>
+<div id='furylevel-container'>
+  <div id='furylevel'></div>
+</div>
 
 <script src="index.js"></script>

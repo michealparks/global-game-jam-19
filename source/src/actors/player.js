@@ -31,7 +31,8 @@ export const player = {
   static: false,
   physics: true,
   animating: true,
-  punching: false
+  punching: false,
+  control: true
 }
 
 player.translation.z = 0.6
@@ -60,6 +61,8 @@ export function player_update (dt) {
 
   accumulator = 0.0
   x = 0.0
+
+  if (player.control === false) return
   
   if (inputs.indexOf(INPUT_RUN) > -1) {
     player.speed = SPEED_RUN
@@ -102,7 +105,6 @@ export function player_update (dt) {
 
   if (lx !== x) {
     setRunAnimation(x, lx)
-
     player.velocity.x = x
   }
 

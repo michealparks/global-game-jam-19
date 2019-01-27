@@ -12,7 +12,7 @@ import {easeOutQuint} from '../utils/easing.js'
 let cameraMatrix = m4_identity()
 export let viewMatrix = m4_identity()
 
-let zoom = 100.0
+let zoom = 130.0
 let nextZoom = 0.0
 let inc = 0.0
 let steps = 800
@@ -47,7 +47,7 @@ function zoomTick () {
   }
 }
 
-export function camera_update (x, z) {
+export function camera_update (x) {
   delta += 0.01
   if (zooming) zoomTick()
 
@@ -57,6 +57,6 @@ export function camera_update (x, z) {
   m4_identityFrom(cameraMatrix)
   m4_rotate(cameraMatrix, -cameraAngleY, 1, 0, 0)
   m4_rotate(cameraMatrix, -cameraAngleX, 0, 1, 0)
-  m4_translate(cameraMatrix, -x, -24, -(z + zoom * 2))
+  m4_translate(cameraMatrix, -x, -24, -(zoom * 2))
   m4_multiply(projectionMatrix, cameraMatrix, viewMatrix)
 }

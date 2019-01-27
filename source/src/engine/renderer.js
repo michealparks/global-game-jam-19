@@ -5,17 +5,11 @@ import {viewMatrix} from './camera.js'
 import {updatePhysics, updateMatrix} from '../objects/index.js'
 import {sprite_update} from '../objects/sprite.js'
 import {setTexture} from '../utils/texture.js'
-import {primitives, sprites, masterSceneUpdate} from '../scenes/master.js'
-
-const fadeSpeed = 0.05
-
-let curScene, curSceneUpdate, curSprites, curPrimitives
+import {sprites, masterSceneUpdate} from '../scenes/master.js'
 
 let elapsedMS = 0.0
 let thenMS = performance.now()
 let tickID = -1
-
-let lastSceneAlpha = 1.0, curSceneAlpha = 0.0
 
 export let renderer_isPaused = true
 
@@ -35,18 +29,12 @@ function drawObjects (objects) {
         updatePhysics(object)
       }
 
-      if (object.sprite === true) {
-        sprite_update(object, elapsedMS)
-      }
+      sprite_update(object, elapsedMS)
     }
 
     m4_multiply(viewMatrix, object.matrix, uMatrix)
 
-    if (object.sprite === true) {
-      setTexture(object.textureId, programUniforms.uSampler)
-    } else {
-      gl.uniform3fv(programUniforms.uColor, object.color)
-    }
+    setTexture(object.textureId, programUniforms.uSampler)
 
     gl.bindVertexArray(object.vao)
     gl.uniformMatrix4fv(programUniforms.uMatrix, false, uMatrix)
@@ -64,13 +52,6 @@ function gameTick (nowMS) {
   thenMS = nowMS
 
   masterSceneUpdate(elapsedMS)
-
-  // render current scene flat shaded objects
-  gl.uniform1i(programUniforms.uHasTexture, 0)
-
-  drawObjects(primitives)
-
-  gl.uniform1i(programUniforms.uHasTexture, 1)
 
   drawObjects(sprites)
 

@@ -12,10 +12,7 @@ export const program = createProgram(
 export const programUniforms = {
   uMatrix: gl.getUniformLocation(program, 'uMatrix'),
   uAlpha: gl.getUniformLocation(program, 'uAlpha'),
-  uHasTexture: gl.getUniformLocation(program, 'uHasTexture'),
   uSampler: gl.getUniformLocation(program, 'uSampler'),
-  uColor: gl.getUniformLocation(program, 'uColor'),
-  uInstanced: gl.getUniformLocation(program, 'uInstanced')
 }
 
 export function initVao (pName, indices, attribs) {

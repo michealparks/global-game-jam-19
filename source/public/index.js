@@ -88,7 +88,7 @@
 
 /***/ "./src/index.js":
 /*!***********************************!*\
-  !*** ./src/index.js + 21 modules ***!
+  !*** ./src/index.js + 23 modules ***!
   \***********************************/
 /*! no exports provided */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -399,9 +399,9 @@ gl.enable(gl.CULL_FACE)
 gl.cullFace(gl.FRONT)
 
 // CONCATENATED MODULE: ./src/shaders/vertex.glsl
-/* harmony default export */ var shaders_vertex = ("#version 300 es\r\n\r\nprecision highp float;\r\n\r\nin vec4 aVertexPosition;\r\nin mediump vec2 aTexturePosition;\r\n\r\nuniform bool uHasTexture;\r\nuniform bool uInstanced;\r\nuniform mat4 uMatrix;\r\n\r\nout mediump vec2 texCoord;\r\n\r\nvoid main() {\r\n  if (uHasTexture) {\r\n    texCoord = aTexturePosition;\r\n  }\r\n\r\n  gl_Position = uMatrix * aVertexPosition;\r\n}\r\n");
+/* harmony default export */ var shaders_vertex = ("#version 300 es\r\n\r\nprecision highp float;\r\n\r\nin vec4 aVertexPosition;\r\nin mediump vec2 aTexturePosition;\r\n\r\nuniform mat4 uMatrix;\r\n\r\nout mediump vec2 texCoord;\r\n\r\nvoid main() {\r\n  texCoord = aTexturePosition;\r\n  gl_Position = uMatrix * aVertexPosition;\r\n}\r\n");
 // CONCATENATED MODULE: ./src/shaders/fragment.glsl
-/* harmony default export */ var shaders_fragment = ("#version 300 es\r\n\r\nprecision mediump float;\r\n\r\nuniform sampler2D uSampler;\r\nuniform bool uHasTexture;\r\nuniform lowp float uAlpha;\r\nuniform lowp vec3 uColor;\r\n\r\nin vec2 texCoord;\r\n\r\nout lowp vec4 outColor;\r\n\r\nvoid main() {\r\n  if (uHasTexture) {\r\n    vec4 result = texture(uSampler, texCoord);\r\n\r\n    if (result.a < 0.9f) {\r\n      discard;\r\n    }\r\n\r\n    outColor = vec4(result.rgb, uAlpha);\r\n  } else {\r\n    outColor = vec4(uColor, uAlpha);\r\n  }\r\n}\r\n");
+/* harmony default export */ var shaders_fragment = ("#version 300 es\r\n\r\nprecision mediump float;\r\n\r\nuniform sampler2D uSampler;\r\nuniform lowp float uAlpha;\r\n\r\nin vec2 texCoord;\r\n\r\nout lowp vec4 outColor;\r\n\r\nvoid main() {\r\n  vec4 result = texture(uSampler, texCoord);\r\n\r\n  if (result.a < 0.9f) {\r\n    discard;\r\n  }\r\n\r\n  outColor = vec4(result.rgb, uAlpha);\r\n}\r\n");
 // CONCATENATED MODULE: ./src/utils/webgl.js
 
 
@@ -456,10 +456,7 @@ const programs_program = createProgram(
 const programUniforms = {
   uMatrix: gl.getUniformLocation(programs_program, 'uMatrix'),
   uAlpha: gl.getUniformLocation(programs_program, 'uAlpha'),
-  uHasTexture: gl.getUniformLocation(programs_program, 'uHasTexture'),
   uSampler: gl.getUniformLocation(programs_program, 'uSampler'),
-  uColor: gl.getUniformLocation(programs_program, 'uColor'),
-  uInstanced: gl.getUniformLocation(programs_program, 'uInstanced')
 }
 
 function initVao (pName, indices, attribs) {
@@ -576,7 +573,7 @@ function easeInOutElastic (t) {
 let cameraMatrix = m4_identity()
 let viewMatrix = m4_identity()
 
-let zoom = 100.0
+let zoom = 130.0
 let nextZoom = 0.0
 let inc = 0.0
 let steps = 800
@@ -611,7 +608,7 @@ function zoomTick () {
   }
 }
 
-function camera_update (x, z) {
+function camera_update (x) {
   delta += 0.01
   if (zooming) zoomTick()
 
@@ -621,7 +618,7 @@ function camera_update (x, z) {
   m4_identityFrom(cameraMatrix)
   m4_rotate(cameraMatrix, -cameraAngleY, 1, 0, 0)
   m4_rotate(cameraMatrix, -cameraAngleX, 0, 1, 0)
-  m4_translate(cameraMatrix, -x, -24, -(z + zoom * 2))
+  m4_translate(cameraMatrix, -x, -24, -(zoom * 2))
   m4_multiply(projectionMatrix, cameraMatrix, viewMatrix)
 }
 
@@ -1149,7 +1146,8 @@ const player = {
   static: false,
   physics: true,
   animating: true,
-  punching: false
+  punching: false,
+  control: true
 }
 
 player.translation.z = 0.6
@@ -1178,6 +1176,8 @@ function player_update (dt) {
 
   accumulator = 0.0
   player_x = 0.0
+
+  if (player.control === false) return
   
   if (input_inputs.indexOf(INPUT_RUN) > -1) {
     player.speed = SPEED_RUN
@@ -1220,7 +1220,6 @@ function player_update (dt) {
 
   if (player_lx !== player_x) {
     setRunAnimation(player_x, player_lx)
-
     player.velocity.x = player_x
   }
 
@@ -1231,7 +1230,57 @@ window.addEventListener('blur', function () {
   player.velocity.x = 0.0
 }, {passive: true})
 
+// CONCATENATED MODULE: ./src/engine/util.js
+
+
+function util_createShader (type, source) {
+  const shader = gl.createShader(type)
+  gl.shaderSource(shader, source)
+  gl.compileShader(shader)
+
+  if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    return shader
+  }
+
+  if (false) {}
+
+  gl.deleteShader(shader)
+}
+
+function util_createProgram (vertex, fragment, attribs, locations) {
+  const program = gl.createProgram()
+  gl.attachShader(program, vertex)
+  gl.attachShader(program, fragment)
+
+  if (attribs !== undefined) {
+    for (let i = 0; i < attribs.length; i++) {
+      gl.bindAttribLocation(program, locations !== undefined ? locations[i] : i, attribs[i])
+    }
+  }
+  
+  gl.linkProgram(program)
+  
+  if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    return program
+  }
+
+  if (false) {}
+
+  gl.deleteProgram(program)
+}
+
+function shuffleArray (array) {
+  for (let i = array.length - 1, j, t; i > 0; --i) {
+    j = Math.floor(Math.random() * (i + 1))
+    t = array[i]
+    array[i] = array[j]
+    array[j] = t
+  }
+}
+
 // CONCATENATED MODULE: ./src/engine/text.js
+
+
 const textEl = document.getElementById('inspiration')
 const bottomTextEl = document.getElementById('bottomtext')
 
@@ -1263,17 +1312,6 @@ const order = []
 
 const len = quotes.length
 let id1 = -1, id2 = -1
-
-function shuffleArray (array) {
-  for (let i = array.length - 1, j, t; i > 0; --i) {
-    j = Math.floor(Math.random() * (i + 1))
-    t = array[i]
-    array[i] = array[j]
-    array[j] = t
-  }
-
-  return array
-}
 
 function restart () {
   for (let i = 0, l = len; i < l; i++) {
@@ -1308,6 +1346,7 @@ function displayText (text, bottomText) {
 }
 
 // CONCATENATED MODULE: ./src/scenes/fury_level.js
+const furylevelContainerStyle = document.getElementById('furylevel-container').style
 const furyElStyle = document.getElementById('furylevel').style
 
 const dec = 0.001
@@ -1316,8 +1355,18 @@ const fury_level_inc = 0.0025
 let furylevel = 1.0
 
 function furyLevel_update (punches) {
+  let mult = punches === 0
+    ? 0
+    : punches === 2
+    ? 3
+    : punches === 3
+    ? 6
+    : punches >= 4
+    ? 9
+    : 1
+
   furylevel -= dec
-  furylevel += (fury_level_inc * punches)
+  furylevel += (fury_level_inc * mult)
 
   if (furylevel > 1.0) {
     furylevel = 1.0
@@ -1325,16 +1374,66 @@ function furyLevel_update (punches) {
 
   const r1 = Math.random()
   const r2 = Math.random()
-
   const x = (((1 - furylevel) * 10)) * Math.random()
   const y = (((1 - furylevel) * 10)) * Math.random()
 
-  furyElStyle.transform = `scale(${furylevel}, 1) translate(${x}px, ${y}px)`
+  furylevelContainerStyle.transform = `translate(${x}px, ${y}px)`
+  furyElStyle.transform = `scale(${furylevel}, 1)`
 
   return furylevel
 }
 
+// CONCATENATED MODULE: ./src/engine/audio.js
+const context = new AudioContext()
+
+function start (loop, vol) {
+  this.source.loop = loop || false
+  this.gainNode.gain.value = vol
+  this.source.start(0)
+}
+
+function stop () {
+  this.source.stop(0)
+}
+
+function crossfade (val, max, el) {
+  const x = val / max
+  // Use an equal-power crossfading curve:
+  const gain1 = Math.cos(x * 0.5 * Math.PI)
+  const gain2 = Math.cos((1.0 - x) * 0.5 * Math.PI)
+  this.gainNode.gain.value = gain1
+  el.gainNode.gain.value = gain2
+}
+
+function createSource (buffer) {
+  const source = context.createBufferSource()
+  const gainNode = context.createGain()
+  source.buffer = buffer
+  
+  source.connect(gainNode)
+  gainNode.connect(context.destination)
+
+  return {source, gainNode, start, stop}
+}
+
+function arrayBuffer (res) {
+  return res.arrayBuffer()
+}
+
+function loadAudio (url) {
+  return fetch(url).then(arrayBuffer).then(function (buf) {
+    return new Promise(function (resolve) {
+      context.decodeAudioData(buf, function (data) {
+        return resolve(createSource(data))
+      })
+    })
+  })
+}
+
+
+
 // CONCATENATED MODULE: ./src/scenes/master.js
+
 
 
 
@@ -1366,22 +1465,16 @@ const bgs = [
   {name: 'bg_wallpaper', frames: 1}
 ]
 
-const rooms = [
-  {name: 'room_1', width: 128, height: 48}
-]
-
-const primitives = []
-const sprites = []
+const sprites = [player]
 const people = []
 
-sprites.push(player)
-
-startInspire()
-
+let sounds
 let shaking = false
 let master_a = 0
 let numKilled = 0
 let didLose = false
+let didPregame = false
+let didStart = false
 
 function removeSprite (sprite) {
   const index = sprites.indexOf(sprite)
@@ -1390,6 +1483,7 @@ function removeSprite (sprite) {
 }
 
 function createScene () {
+
   const r1 = (Math.random() * bgs.length - 1) | 0
   const r2 = (Math.random() * bgs.length - 1) | 0
   const r3 = (Math.random() * bgs.length - 1) | 0
@@ -1419,12 +1513,16 @@ function removeScene () {
 }
 
 function createRoom (info, x) {
-  const room = sprite_sprite(
-    info.name,   /* filename */
-    48,  /* width */
-    48, /* height */
-    info.frames, /* frames */
-  )
+  const room = {
+    ...sprite_sprite(
+      info.name,   /* filename */
+      48,          /* width */
+      48,          /* height */
+      info.frames, /* frames */
+      {idle: {start: 0, end: frames - 1, speed: 200}}
+    ),
+    static: frames > 1
+  }
 
   room.translation.x = (48 / 2) + x
   updateMatrix(room)
@@ -1470,12 +1568,74 @@ function createPerson (info, x) {
   return person
 }
 
+function masterSceneInit (s) {
+  sounds = s
+
+  player.translation.x = -100
+  sounds.intro.start(true, 0.5)
+}
+
+function startPregame () {
+  createScene()
+  createScene()
+
+  sounds.intro.stop()
+
+  player.velocity.x = 0.0
+  sprite_setAnimation(player, 'idle_right')
+  player.control = false
+  didPregame = true
+
+  setTimeout(startGame, 5000)
+}
+
+function startGame () {
+  startInspire()
+
+  sounds.party1.start(true, 0.5)
+  player.control = true
+
+  didStart = true
+}
+
+function endGame () {
+  sounds.party1.stop()
+  sounds.fail.start(true, 0.5)
+
+  gl.canvas.classList.add('game-over')
+  player.velocity.x = 0
+  sprite_setAnimation(player, 'idle_right')
+  endInspire()
+  camera_setZoom(150.0, 1500)
+  camera_setShake(0.0, 0.0)
+
+  setTimeout(function () {
+    displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`)
+
+    setTimeout(function () {
+      displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`, 'BEFORE YOU LOST YOUR PASSION')
+    }, 2000)
+  }, 2000)
+}
+
 function masterSceneUpdate (elapsedMS) {
-  camera_update(player.translation.x, player.translation.z)
+  const {x} = player.translation
+
+  camera_update(x)
 
   if (didLose) return
 
-  if (player.translation.x + window.innerWidth > nextRoomX) {
+  player_update(elapsedMS)
+
+  if (!didPregame && x > nextRoomX) {
+    startPregame()
+  }
+
+  if (!didStart) {
+    return
+  }
+
+  if (x + window.innerWidth > nextRoomX) {
     createScene()
   }
 
@@ -1506,7 +1666,7 @@ function masterSceneUpdate (elapsedMS) {
 
       if (p.dead) continue
 
-      if (Math.abs(player.translation.x - p.translation.x) < 10) {
+      if (Math.abs(x - p.translation.x) < 10) {
         sprite_setAnimation(p, 'fly')
 
         p.velocity.x = v * 2
@@ -1542,29 +1702,10 @@ function masterSceneUpdate (elapsedMS) {
     master_a = 0
   }
 
-  player_update(elapsedMS)
-
   if (furyLevel_update(master_a) <= 0.0) {
     didLose = true
     endGame()
   }
-}
-
-function endGame () {
-  gl.canvas.classList.add('game-over')
-  player.velocity.x = 0
-  sprite_setAnimation(player, 'idle_right')
-  endInspire()
-  camera_setZoom(150.0, 1500)
-  camera_setShake(0.0, 0.0)
-
-  setTimeout(function () {
-    displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`)
-
-    setTimeout(function () {
-      displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`, 'BEFORE YOU LOST YOUR PASSION')
-    }, 2000)
-  }, 2000)
 }
 
 // CONCATENATED MODULE: ./src/engine/renderer.js
@@ -1577,15 +1718,9 @@ function endGame () {
 
 
 
-const fadeSpeed = 0.05
-
-let curScene, curSceneUpdate, curSprites, curPrimitives
-
 let renderer_elapsedMS = 0.0
 let thenMS = performance.now()
 let tickID = -1
-
-let lastSceneAlpha = 1.0, curSceneAlpha = 0.0
 
 let renderer_isPaused = true
 
@@ -1605,18 +1740,12 @@ function drawObjects (objects) {
         updatePhysics(renderer_object)
       }
 
-      if (renderer_object.sprite === true) {
-        sprite_update(renderer_object, renderer_elapsedMS)
-      }
+      sprite_update(renderer_object, renderer_elapsedMS)
     }
 
     m4_multiply(viewMatrix, renderer_object.matrix, uMatrix)
 
-    if (renderer_object.sprite === true) {
-      setTexture(renderer_object.textureId, programUniforms.uSampler)
-    } else {
-      gl.uniform3fv(programUniforms.uColor, renderer_object.color)
-    }
+    setTexture(renderer_object.textureId, programUniforms.uSampler)
 
     gl.bindVertexArray(renderer_object.vao)
     gl.uniformMatrix4fv(programUniforms.uMatrix, false, uMatrix)
@@ -1634,13 +1763,6 @@ function gameTick (nowMS) {
   thenMS = nowMS
 
   masterSceneUpdate(renderer_elapsedMS)
-
-  // render current scene flat shaded objects
-  gl.uniform1i(programUniforms.uHasTexture, 0)
-
-  drawObjects(primitives)
-
-  gl.uniform1i(programUniforms.uHasTexture, 1)
 
   drawObjects(sprites)
 
@@ -1663,8 +1785,22 @@ function renderer_pause () {
 
 
 
-createScene()
-renderer_start()
+
+Promise.all([
+  loadAudio('./music/intro.mp3'),
+  loadAudio('./music/party_1.mp3'),
+  loadAudio('./music/party_2.mp3'),
+  loadAudio('./music/fail.mp3')
+]).then(function (arr) {
+  renderer_start()
+
+  masterSceneInit({
+    intro: arr[0],
+    party1: arr[1],
+    party2: arr[2],
+    fail: arr[3]
+  })
+})
 
 let wasPaused = renderer_isPaused
 document.addEventListener('visibilitychange', function () {

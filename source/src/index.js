@@ -5,10 +5,24 @@ import {
 } from './engine/renderer.js'
 import {updateMatrix} from './objects'
 import {sprite, sprite_setAnimation} from './objects/sprite.js'
-import {createScene} from './scenes/master.js'
+import {masterSceneInit} from './scenes/master.js'
+import {loadAudio} from './engine/audio.js'
 
-createScene()
-renderer_start()
+Promise.all([
+  loadAudio('./music/intro.mp3'),
+  loadAudio('./music/party_1.mp3'),
+  loadAudio('./music/party_2.mp3'),
+  loadAudio('./music/fail.mp3')
+]).then(function (arr) {
+  renderer_start()
+
+  masterSceneInit({
+    intro: arr[0],
+    party1: arr[1],
+    party2: arr[2],
+    fail: arr[3]
+  })
+})
 
 let wasPaused = renderer_isPaused
 document.addEventListener('visibilitychange', function () {

@@ -5,6 +5,7 @@ import {player, player_update} from '../actors/player.js'
 import {sprite, sprite_setAnimation} from '../objects/sprite.js'
 import {startInspire, endInspire, displayText} from '../engine/text.js'
 import {furyLevel_update} from './fury_level.js'
+import {loadAudio} from '../engine/audio.js'
 
 let nextRoomX = 0
 let translateZ = 0.1
@@ -29,22 +30,16 @@ const bgs = [
   {name: 'bg_wallpaper', frames: 1}
 ]
 
-const rooms = [
-  {name: 'room_1', width: 128, height: 48}
-]
-
-export const primitives = []
-export const sprites = []
+export const sprites = [player]
 export const people = []
 
-sprites.push(player)
-
-startInspire()
-
+let sounds
 let shaking = false
 let a = 0
 let numKilled = 0
 let didLose = false
+let didPregame = false
+let didStart = false
 
 export function removeSprite (sprite) {
   const index = sprites.indexOf(sprite)
@@ -53,6 +48,7 @@ export function removeSprite (sprite) {
 }
 
 export function createScene () {
+
   const r1 = (Math.random() * bgs.length - 1) | 0
   const r2 = (Math.random() * bgs.length - 1) | 0
   const r3 = (Math.random() * bgs.length - 1) | 0
@@ -82,12 +78,16 @@ export function removeScene () {
 }
 
 export function createRoom (info, x) {
-  const room = sprite(
-    info.name,   /* filename */
-    48,  /* width */
-    48, /* height */
-    info.frames, /* frames */
-  )
+  const room = {
+    ...sprite(
+      info.name,   /* filename */
+      48,          /* width */
+      48,          /* height */
+      info.frames, /* frames */
+      {idle: {start: 0, end: frames - 1, speed: 200}}
+    ),
+    static: frames > 1
+  }
 
   room.translation.x = (48 / 2) + x
   updateMatrix(room)
@@ -133,12 +133,74 @@ export function createPerson (info, x) {
   return person
 }
 
+export function masterSceneInit (s) {
+  sounds = s
+
+  player.translation.x = -100
+  sounds.intro.start(true, 0.5)
+}
+
+export function startPregame () {
+  createScene()
+  createScene()
+
+  sounds.intro.stop()
+
+  player.velocity.x = 0.0
+  sprite_setAnimation(player, 'idle_right')
+  player.control = false
+  didPregame = true
+
+  setTimeout(startGame, 5000)
+}
+
+export function startGame () {
+  startInspire()
+
+  sounds.party1.start(true, 0.5)
+  player.control = true
+
+  didStart = true
+}
+
+function endGame () {
+  sounds.party1.stop()
+  sounds.fail.start(true, 0.5)
+
+  gl.canvas.classList.add('game-over')
+  player.velocity.x = 0
+  sprite_setAnimation(player, 'idle_right')
+  endInspire()
+  camera_setZoom(150.0, 1500)
+  camera_setShake(0.0, 0.0)
+
+  setTimeout(function () {
+    displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`)
+
+    setTimeout(function () {
+      displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`, 'BEFORE YOU LOST YOUR PASSION')
+    }, 2000)
+  }, 2000)
+}
+
 export function masterSceneUpdate (elapsedMS) {
-  camera_update(player.translation.x, player.translation.z)
+  const {x} = player.translation
+
+  camera_update(x)
 
   if (didLose) return
 
-  if (player.translation.x + window.innerWidth > nextRoomX) {
+  player_update(elapsedMS)
+
+  if (!didPregame && x > nextRoomX) {
+    startPregame()
+  }
+
+  if (!didStart) {
+    return
+  }
+
+  if (x + window.innerWidth > nextRoomX) {
     createScene()
   }
 
@@ -169,7 +231,7 @@ export function masterSceneUpdate (elapsedMS) {
 
       if (p.dead) continue
 
-      if (Math.abs(player.translation.x - p.translation.x) < 10) {
+      if (Math.abs(x - p.translation.x) < 10) {
         sprite_setAnimation(p, 'fly')
 
         p.velocity.x = v * 2
@@ -205,27 +267,8 @@ export function masterSceneUpdate (elapsedMS) {
     a = 0
   }
 
-  player_update(elapsedMS)
-
   if (furyLevel_update(a) <= 0.0) {
     didLose = true
     endGame()
   }
-}
-
-export function endGame () {
-  gl.canvas.classList.add('game-over')
-  player.velocity.x = 0
-  sprite_setAnimation(player, 'idle_right')
-  endInspire()
-  camera_setZoom(150.0, 1500)
-  camera_setShake(0.0, 0.0)
-
-  setTimeout(function () {
-    displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`)
-
-    setTimeout(function () {
-      displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`, 'BEFORE YOU LOST YOUR PASSION')
-    }, 2000)
-  }, 2000)
 }

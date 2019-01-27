@@ -1,3 +1,5 @@
+import {shuffleArray} from './util'
+
 const textEl = document.getElementById('inspiration')
 const bottomTextEl = document.getElementById('bottomtext')
 
@@ -29,17 +31,6 @@ const order = []
 
 const len = quotes.length
 let id1 = -1, id2 = -1
-
-function shuffleArray (array) {
-  for (let i = array.length - 1, j, t; i > 0; --i) {
-    j = Math.floor(Math.random() * (i + 1))
-    t = array[i]
-    array[i] = array[j]
-    array[j] = t
-  }
-
-  return array
-}
 
 function restart () {
   for (let i = 0, l = len; i < l; i++) {
