@@ -1,11 +1,16 @@
-import {camera_update, camera_setShake} from '../engine/camera.js'
+import {gl} from '../engine/gl.js'
+import {camera_update, camera_setZoom, camera_setShake} from '../engine/camera.js'
 import {updateMatrix} from '../objects/index.js'
 import {player, player_update} from '../actors/player.js'
 import {sprite, sprite_setAnimation} from '../objects/sprite.js'
-import {startInspire, endInspire} from '../engine/text.js'
+import {startInspire, endInspire, displayText} from '../engine/text.js'
+import {furyLevel_update} from './fury_level.js'
 
-let sceneID = -1
 let nextRoomX = 0
+let translateZ = 0.1
+
+const SPEED = 1.8
+const ROOM_WIDTH = 48 * 3
 
 const teenagers = [
   // {name: 'bro', frames: 1},
@@ -14,6 +19,14 @@ const teenagers = [
   {name: 'yoga_gal', frames: 6},
   {name: 'slice', frames: 6},
   {name: 'hover_bro', frames: 6}
+]
+
+const bgs = [
+  {name: 'bg_bookshelf', frames: 2},
+  {name: 'bg_couch', frames: 1},
+  {name: 'bg_lamp', frames: 2},
+  {name: 'bg_plant', frames: 1},
+  {name: 'bg_wallpaper', frames: 1}
 ]
 
 const rooms = [
@@ -26,6 +39,13 @@ export const people = []
 
 sprites.push(player)
 
+startInspire()
+
+let shaking = false
+let a = 0
+let numKilled = 0
+let didLose = false
+
 export function removeSprite (sprite) {
   const index = sprites.indexOf(sprite)
 
@@ -33,12 +53,20 @@ export function removeSprite (sprite) {
 }
 
 export function createScene () {
-  const roomInfo = rooms[(Math.random() * rooms.length - 1) | 0]
-  const room = createRoom(roomInfo, nextRoomX)
-  sprites.push(room)
+  const r1 = (Math.random() * bgs.length - 1) | 0
+  const r2 = (Math.random() * bgs.length - 1) | 0
+  const r3 = (Math.random() * bgs.length - 1) | 0
+
+  const p1 = createRoom(bgs[r1], nextRoomX)
+  const p2 = createRoom(bgs[r2], nextRoomX + 48)
+  const p3 = createRoom(bgs[r3], nextRoomX + 48 + 48)
+
+  sprites.push(p1)
+  sprites.push(p2)
+  sprites.push(p3)
 
   for (let x, i = 0; i < teenagers.length; i++) {
-    x = 32 + (Math.random() * (roomInfo.width - 32)) + nextRoomX
+    x = 32 + (Math.random() * (ROOM_WIDTH - 32)) + nextRoomX
 
     const person = createPerson(teenagers[i], x)
 
@@ -46,9 +74,7 @@ export function createScene () {
     sprites.push(person)
   }
 
-  nextRoomX += roomInfo.width
-
-  return ++sceneID
+  nextRoomX += ROOM_WIDTH
 }
 
 export function removeScene () {
@@ -57,19 +83,17 @@ export function removeScene () {
 
 export function createRoom (info, x) {
   const room = sprite(
-    info.name, /* filename */
-    info.width,    /* width */
-    info.height,       /* height */
-    1,        /* frames */
+    info.name,   /* filename */
+    48,  /* width */
+    48, /* height */
+    info.frames, /* frames */
   )
 
-  room.translation.x = (info.width / 2) + x
+  room.translation.x = (48 / 2) + x
   updateMatrix(room)
 
   return room
 }
-
-let translateZ = 0.1
 
 function setTranslateZ () {
   if (translateZ === 0.5) {
@@ -109,12 +133,11 @@ export function createPerson (info, x) {
   return person
 }
 
-startInspire()
-
-let shaking = false
-let a = 0
-
 export function masterSceneUpdate (elapsedMS) {
+  camera_update(player.translation.x, player.translation.z)
+
+  if (didLose) return
+
   if (player.translation.x + window.innerWidth > nextRoomX) {
     createScene()
   }
@@ -139,16 +162,17 @@ export function masterSceneUpdate (elapsedMS) {
       shaking = true
     }
 
+    const v = (player.velocity.x > 0 ? SPEED : -SPEED)
+
     for (let p, i = 0, l = people.length; i < l; i++) {
       p = people[i]
-
 
       if (p.dead) continue
 
       if (Math.abs(player.translation.x - p.translation.x) < 10) {
         sprite_setAnimation(p, 'fly')
 
-        p.velocity.x = player.velocity.x * 2
+        p.velocity.x = v * 2
 
         if (a === 1) {
           p.velocity.y = 0.4
@@ -158,7 +182,7 @@ export function masterSceneUpdate (elapsedMS) {
           p.angularVelocity.z = 0.4
           p.scaleVelocity.x = p.scaleVelocity.y = p.scaleVelocity.z = 0.01
         } else if (a === 3) {
-          p.velocity.x = player.velocity.x * 3
+          p.velocity.x = v * 3
           p.velocity.y = 1.5
           p.angularVelocity.z = 0.6
           p.scaleVelocity.x = p.scaleVelocity.y = p.scaleVelocity.z = 0.09
@@ -168,6 +192,7 @@ export function masterSceneUpdate (elapsedMS) {
         p.physics = true
 
         a++
+        numKilled++
       }
     }
 
@@ -180,7 +205,27 @@ export function masterSceneUpdate (elapsedMS) {
     a = 0
   }
 
-  camera_update(player.translation.x, player.translation.z)
   player_update(elapsedMS)
+
+  if (furyLevel_update(a) <= 0.0) {
+    didLose = true
+    endGame()
+  }
 }
 
+export function endGame () {
+  gl.canvas.classList.add('game-over')
+  player.velocity.x = 0
+  sprite_setAnimation(player, 'idle_right')
+  endInspire()
+  camera_setZoom(150.0, 1500)
+  camera_setShake(0.0, 0.0)
+
+  setTimeout(function () {
+    displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`)
+
+    setTimeout(function () {
+      displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`, 'BEFORE YOU LOST YOUR PASSION')
+    }, 2000)
+  }, 2000)
+}

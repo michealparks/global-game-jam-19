@@ -23,10 +23,11 @@ let shakeMagnitude = 0.00001
 let shakeSpeed = 0.0
 
 let delta = 0.0
-let cameraAngleY = 0.01
+let cameraAngleY = 0.0
 let cameraAngleX = 0.0
 
-export function camera_setZoom (n) {
+export function camera_setZoom (n, s) {
+  steps = s || 800
   nextZoom = n
   curStep = 0
   zooming = true

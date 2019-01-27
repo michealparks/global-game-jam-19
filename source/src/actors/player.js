@@ -6,7 +6,7 @@ import {
 import {sprite, sprite_setAnimation} from '../objects/sprite.js'
 import {inputs} from '../input/index.js'
 
-const SPEED_WALK = 1.8
+const SPEED_WALK = 1.6
 const SPEED_RUN = 3.0
 const PUNCH_TIME = 300.0
 
@@ -15,7 +15,7 @@ export const player = {
     'dad', /* filename */
     32,    /* width */
     32,    /* height */
-    20,   /* frames */
+    20,    /* frames */
     /* animations */
     {      
       idle_right: {start: 0, end: 0, speed: 2000},

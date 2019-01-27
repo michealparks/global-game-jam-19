@@ -55,6 +55,7 @@ function drawObjects (objects) {
 }
 
 gl.useProgram(program)
+gl.uniform1f(programUniforms.uAlpha, 1.0)
 
 function gameTick (nowMS) {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
@@ -63,8 +64,6 @@ function gameTick (nowMS) {
   thenMS = nowMS
 
   masterSceneUpdate(elapsedMS)
-
-  gl.uniform1f(programUniforms.uAlpha, 1.0)
 
   // render current scene flat shaded objects
   gl.uniform1i(programUniforms.uHasTexture, 0)

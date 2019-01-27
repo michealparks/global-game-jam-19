@@ -88,7 +88,7 @@
 
 /***/ "./src/index.js":
 /*!***********************************!*\
-  !*** ./src/index.js + 20 modules ***!
+  !*** ./src/index.js + 21 modules ***!
   \***********************************/
 /*! no exports provided */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -587,10 +587,11 @@ let shakeMagnitude = 0.00001
 let shakeSpeed = 0.0
 
 let delta = 0.0
-let cameraAngleY = 0.01
+let cameraAngleY = 0.0
 let cameraAngleX = 0.0
 
-function camera_setZoom (n) {
+function camera_setZoom (n, s) {
+  steps = s || 800
   nextZoom = n
   curStep = 0
   zooming = true
@@ -1123,7 +1124,7 @@ window.addEventListener('gamepaddisconnected', function (e) {
 
 
 
-const SPEED_WALK = 1.8
+const SPEED_WALK = 1.6
 const SPEED_RUN = 3.0
 const PUNCH_TIME = 300.0
 
@@ -1132,7 +1133,7 @@ const player = {
     'dad', /* filename */
     32,    /* width */
     32,    /* height */
-    20,   /* frames */
+    20,    /* frames */
     /* animations */
     {      
       idle_right: {start: 0, end: 0, speed: 2000},
@@ -1232,6 +1233,7 @@ window.addEventListener('blur', function () {
 
 // CONCATENATED MODULE: ./src/engine/text.js
 const textEl = document.getElementById('inspiration')
+const bottomTextEl = document.getElementById('bottomtext')
 
 const quotes = [
   'HOME IS WHERE YOUR FIST IS.',
@@ -1260,7 +1262,7 @@ const quotes = [
 const order = []
 
 const len = quotes.length
-let text_id = -1
+let id1 = -1, id2 = -1
 
 function shuffleArray (array) {
   for (let i = array.length - 1, j, t; i > 0; --i) {
@@ -1285,17 +1287,51 @@ function inspire () {
   if (order.length === 0) restart()
 
   textEl.innerText = quotes[order.pop()]
-  setTimeout(function () {
+  id2 = setTimeout(function () {
     textEl.innerText = ''
   }, 7000)
 }
 
 function startInspire () {
-  text_id = setInterval(inspire, 10000)
+  id1 = setInterval(inspire, 10000)
 }
 
 function endInspire () {
-  clearTimeout(text_id)
+  clearTimeout(id1)
+  clearTimeout(id2)
+  textEl.innerText = ''
+}
+
+function displayText (text, bottomText) {
+  textEl.innerText = text || ''
+  bottomTextEl.innerText = bottomText || ''
+}
+
+// CONCATENATED MODULE: ./src/scenes/fury_level.js
+const furyElStyle = document.getElementById('furylevel').style
+
+const dec = 0.001
+const fury_level_inc = 0.0025
+
+let furylevel = 1.0
+
+function furyLevel_update (punches) {
+  furylevel -= dec
+  furylevel += (fury_level_inc * punches)
+
+  if (furylevel > 1.0) {
+    furylevel = 1.0
+  }
+
+  const r1 = Math.random()
+  const r2 = Math.random()
+
+  const x = (((1 - furylevel) * 10)) * Math.random()
+  const y = (((1 - furylevel) * 10)) * Math.random()
+
+  furyElStyle.transform = `scale(${furylevel}, 1) translate(${x}px, ${y}px)`
+
+  return furylevel
 }
 
 // CONCATENATED MODULE: ./src/scenes/master.js
@@ -1305,8 +1341,13 @@ function endInspire () {
 
 
 
-let sceneID = -1
+
+
 let nextRoomX = 0
+let translateZ = 0.1
+
+const SPEED = 1.8
+const ROOM_WIDTH = 48 * 3
 
 const teenagers = [
   // {name: 'bro', frames: 1},
@@ -1315,6 +1356,14 @@ const teenagers = [
   {name: 'yoga_gal', frames: 6},
   {name: 'slice', frames: 6},
   {name: 'hover_bro', frames: 6}
+]
+
+const bgs = [
+  {name: 'bg_bookshelf', frames: 2},
+  {name: 'bg_couch', frames: 1},
+  {name: 'bg_lamp', frames: 2},
+  {name: 'bg_plant', frames: 1},
+  {name: 'bg_wallpaper', frames: 1}
 ]
 
 const rooms = [
@@ -1327,6 +1376,13 @@ const people = []
 
 sprites.push(player)
 
+startInspire()
+
+let shaking = false
+let master_a = 0
+let numKilled = 0
+let didLose = false
+
 function removeSprite (sprite) {
   const index = sprites.indexOf(sprite)
 
@@ -1334,12 +1390,20 @@ function removeSprite (sprite) {
 }
 
 function createScene () {
-  const roomInfo = rooms[(Math.random() * rooms.length - 1) | 0]
-  const room = createRoom(roomInfo, nextRoomX)
-  sprites.push(room)
+  const r1 = (Math.random() * bgs.length - 1) | 0
+  const r2 = (Math.random() * bgs.length - 1) | 0
+  const r3 = (Math.random() * bgs.length - 1) | 0
+
+  const p1 = createRoom(bgs[r1], nextRoomX)
+  const p2 = createRoom(bgs[r2], nextRoomX + 48)
+  const p3 = createRoom(bgs[r3], nextRoomX + 48 + 48)
+
+  sprites.push(p1)
+  sprites.push(p2)
+  sprites.push(p3)
 
   for (let x, i = 0; i < teenagers.length; i++) {
-    x = 32 + (Math.random() * (roomInfo.width - 32)) + nextRoomX
+    x = 32 + (Math.random() * (ROOM_WIDTH - 32)) + nextRoomX
 
     const person = createPerson(teenagers[i], x)
 
@@ -1347,9 +1411,7 @@ function createScene () {
     sprites.push(person)
   }
 
-  nextRoomX += roomInfo.width
-
-  return ++sceneID
+  nextRoomX += ROOM_WIDTH
 }
 
 function removeScene () {
@@ -1358,19 +1420,17 @@ function removeScene () {
 
 function createRoom (info, x) {
   const room = sprite_sprite(
-    info.name, /* filename */
-    info.width,    /* width */
-    info.height,       /* height */
-    1,        /* frames */
+    info.name,   /* filename */
+    48,  /* width */
+    48, /* height */
+    info.frames, /* frames */
   )
 
-  room.translation.x = (info.width / 2) + x
+  room.translation.x = (48 / 2) + x
   updateMatrix(room)
 
   return room
 }
-
-let translateZ = 0.1
 
 function setTranslateZ () {
   if (translateZ === 0.5) {
@@ -1410,12 +1470,11 @@ function createPerson (info, x) {
   return person
 }
 
-startInspire()
-
-let shaking = false
-let master_a = 0
-
 function masterSceneUpdate (elapsedMS) {
+  camera_update(player.translation.x, player.translation.z)
+
+  if (didLose) return
+
   if (player.translation.x + window.innerWidth > nextRoomX) {
     createScene()
   }
@@ -1440,16 +1499,17 @@ function masterSceneUpdate (elapsedMS) {
       shaking = true
     }
 
+    const v = (player.velocity.x > 0 ? SPEED : -SPEED)
+
     for (let p, i = 0, l = people.length; i < l; i++) {
       p = people[i]
-
 
       if (p.dead) continue
 
       if (Math.abs(player.translation.x - p.translation.x) < 10) {
         sprite_setAnimation(p, 'fly')
 
-        p.velocity.x = player.velocity.x * 2
+        p.velocity.x = v * 2
 
         if (master_a === 1) {
           p.velocity.y = 0.4
@@ -1459,7 +1519,7 @@ function masterSceneUpdate (elapsedMS) {
           p.angularVelocity.z = 0.4
           p.scaleVelocity.x = p.scaleVelocity.y = p.scaleVelocity.z = 0.01
         } else if (master_a === 3) {
-          p.velocity.x = player.velocity.x * 3
+          p.velocity.x = v * 3
           p.velocity.y = 1.5
           p.angularVelocity.z = 0.6
           p.scaleVelocity.x = p.scaleVelocity.y = p.scaleVelocity.z = 0.09
@@ -1469,6 +1529,7 @@ function masterSceneUpdate (elapsedMS) {
         p.physics = true
 
         master_a++
+        numKilled++
       }
     }
 
@@ -1481,10 +1542,30 @@ function masterSceneUpdate (elapsedMS) {
     master_a = 0
   }
 
-  camera_update(player.translation.x, player.translation.z)
   player_update(elapsedMS)
+
+  if (furyLevel_update(master_a) <= 0.0) {
+    didLose = true
+    endGame()
+  }
 }
 
+function endGame () {
+  gl.canvas.classList.add('game-over')
+  player.velocity.x = 0
+  sprite_setAnimation(player, 'idle_right')
+  endInspire()
+  camera_setZoom(150.0, 1500)
+  camera_setShake(0.0, 0.0)
+
+  setTimeout(function () {
+    displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`)
+
+    setTimeout(function () {
+      displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`, 'BEFORE YOU LOST YOUR PASSION')
+    }, 2000)
+  }, 2000)
+}
 
 // CONCATENATED MODULE: ./src/engine/renderer.js
 
@@ -1544,6 +1625,7 @@ function drawObjects (objects) {
 }
 
 gl.useProgram(programs_program)
+gl.uniform1f(programUniforms.uAlpha, 1.0)
 
 function gameTick (nowMS) {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
@@ -1552,8 +1634,6 @@ function gameTick (nowMS) {
   thenMS = nowMS
 
   masterSceneUpdate(renderer_elapsedMS)
-
-  gl.uniform1f(programUniforms.uAlpha, 1.0)
 
   // render current scene flat shaded objects
   gl.uniform1i(programUniforms.uHasTexture, 0)

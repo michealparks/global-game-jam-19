@@ -1,4 +1,5 @@
 const textEl = document.getElementById('inspiration')
+const bottomTextEl = document.getElementById('bottomtext')
 
 const quotes = [
   'HOME IS WHERE YOUR FIST IS.',
@@ -27,7 +28,7 @@ const quotes = [
 const order = []
 
 const len = quotes.length
-let id = -1
+let id1 = -1, id2 = -1
 
 function shuffleArray (array) {
   for (let i = array.length - 1, j, t; i > 0; --i) {
@@ -52,15 +53,22 @@ function inspire () {
   if (order.length === 0) restart()
 
   textEl.innerText = quotes[order.pop()]
-  setTimeout(function () {
+  id2 = setTimeout(function () {
     textEl.innerText = ''
   }, 7000)
 }
 
 export function startInspire () {
-  id = setInterval(inspire, 10000)
+  id1 = setInterval(inspire, 10000)
 }
 
 export function endInspire () {
-  clearTimeout(id)
+  clearTimeout(id1)
+  clearTimeout(id2)
+  textEl.innerText = ''
+}
+
+export function displayText (text, bottomText) {
+  textEl.innerText = text || ''
+  bottomTextEl.innerText = bottomText || ''
 }
