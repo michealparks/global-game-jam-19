@@ -1,5 +1,6 @@
 import {
   INPUT_UP, INPUT_LEFT, INPUT_RIGHT, INPUT_DOWN,
+  INPUT_PUNCH,
   INPUT_PUNCH_LEFT, INPUT_PUNCH_RIGHT, INPUT_PUNCH_UP, INPUT_PUNCH_DOWN,
   INPUT_RUN
 } from './input_codes.js'
@@ -29,7 +30,8 @@ const inputMap = {
   37: INPUT_PUNCH_LEFT,
   39: INPUT_PUNCH_RIGHT,
 
-  16: INPUT_RUN
+  16: INPUT_RUN,
+  32: INPUT_PUNCH
 }
 
 function onKeyDown (e) {

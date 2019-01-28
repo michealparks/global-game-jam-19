@@ -12,9 +12,9 @@ out lowp vec4 outColor;
 void main() {
   vec4 result = texture(uSampler, texCoord);
 
-  if (result.a < 0.9f) {
+  if (result.a < 0.1f) {
     discard;
   }
 
-  outColor = vec4(result.rgb, uAlpha);
+  outColor = result;
 }

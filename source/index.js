@@ -4,11 +4,11 @@ const electron = require('electron')
 const {format} = require('url')
 const {resolve} = require('path')
 
-const {app, BrowserWindow, ipcMain: ipc} = electron
+const {app, BrowserWindow} = electron
 
 let win
 
-const onFatalCrash = (e) => {
+function onFatalCrash (e) {
   if (__dev__) console.error(e.stack)
 
   process.exit(1)
@@ -18,26 +18,32 @@ app.on('gpu-process-crashed', onFatalCrash)
 process.on('uncaughtException', onFatalCrash)
 
 app.requestSingleInstanceLock()
-app.on('second-instance', () => win && win.focus())
+app.on('second-instance', function () {
+  if (win) win.focus()
+})
 
 if (__dev__) {
   require('./webpack')
 }
 
-app.commandLine.appendSwitch('enable-precise-memory-info')
+if (__dev__) {
+  app.commandLine.appendSwitch('enable-precise-memory-info')
+}
+
 app.commandLine.appendSwitch('disable-renderer-backgrounding')
 app.commandLine.appendSwitch('js-flags', '--use_strict')
 
-app.once('ready', () => {
+app.once('ready', function () {
   const {bounds} = electron.screen.getPrimaryDisplay()
 
   win = new BrowserWindow({
-    title: '',
+    title: 'House Party',
+    icon: '',
     center: true,
-    width: bounds.width - 200,
-    height: bounds.height - 200,
-    minWidth: bounds.width / 2,
-    minHeight: bounds.height * 3 / 4,
+    width: 1240, // bounds.width - 200,
+    height: 740, // bounds.height - 200,
+    resizable: false,
+    maximizable: false,
     show: false,
     titleBarStyle: 'hidden',
     webPreferences: {
@@ -56,14 +62,6 @@ app.once('ready', () => {
   }))
 
   if (__dev__) {
-    win.openDevTools(/* {mode: 'detach'} */)
+    win.openDevTools({mode: 'detach'})
   }
-})
-
-ipc.on('quit', (e, arg) => {
-  app.quit()
-})
-
-ipc.on('toggleFullScreen', (e, arg) => {
-  win.setFullScreen(arg)
 })

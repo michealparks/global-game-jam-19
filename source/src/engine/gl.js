@@ -46,7 +46,7 @@ canvas.addEventListener('webglcontextrestored', function (e) {
 resizeCanvas()
 addEventListener('resize', resizeCanvas, {passive: true})
 
-gl.clearColor(0.0, 0.0, 0.0, 1.0)
+gl.clearColor(0.0, 0.0, 0.0, 0.0)
 gl.clearDepth(1.0)
 
 // Turn on depth testing

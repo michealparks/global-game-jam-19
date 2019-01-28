@@ -1,12 +1,16 @@
-const furylevelContainerStyle = document.getElementById('furylevel-container').style
+const furylevelContainer = document.getElementById('furylevel-container')
 const furyElStyle = document.getElementById('furylevel').style
+const furylevelContainerStyle = furylevelContainer.style
 
-const dec = 0.001
+const dec = 0.0011
 const inc = 0.0025
 
 let furylevel = 1.0
+let isActive = false
 
 export function furyLevel_update (punches) {
+  if (!isActive) return 1.0
+
   let mult = punches === 0
     ? 0
     : punches === 2
@@ -17,7 +21,7 @@ export function furyLevel_update (punches) {
     ? 9
     : 1
 
-  furylevel -= dec
+  furylevel -= (punches === -1 ? dec * 10 : dec)
   furylevel += (inc * mult)
 
   if (furylevel > 1.0) {
@@ -33,4 +37,18 @@ export function furyLevel_update (punches) {
   furyElStyle.transform = `scale(${furylevel}, 1)`
 
   return furylevel
+}
+
+export function furyLevel_show (toShow) {
+  isActive = toShow
+
+  if (toShow) {
+    furylevelContainer.classList.add('animating', 'shown')
+    setTimeout(function () {
+      furylevelContainer.classList.remove('animating')
+    }, 400)
+  } else {
+    furylevelContainer.classList.add('animating')
+    furylevelContainer.classList.remove('shown')
+  }
 }

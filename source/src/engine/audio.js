@@ -1,9 +1,13 @@
 const context = new AudioContext()
 
 function start (loop, vol) {
+  this.source = context.createBufferSource()
+  this.source.buffer = this.buffer
   this.source.loop = loop || false
+  this.source.connect(this.gainNode)
+
   this.gainNode.gain.value = vol
-  this.source.start(0)
+  this.source.start(1)
 }
 
 function stop () {
@@ -20,14 +24,10 @@ function crossfade (val, max, el) {
 }
 
 function createSource (buffer) {
-  const source = context.createBufferSource()
   const gainNode = context.createGain()
-  source.buffer = buffer
-  
-  source.connect(gainNode)
   gainNode.connect(context.destination)
 
-  return {source, gainNode, start, stop}
+  return {source: undefined, buffer, gainNode, start, stop}
 }
 
 function arrayBuffer (res) {

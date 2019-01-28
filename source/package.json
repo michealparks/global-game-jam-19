@@ -5,12 +5,22 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "electron --js-flags=\"--use_strict\" index.js dev",
-    "build": "node --use-strict webpack prod"
+    "build": "node --use-strict webpack prod",
+    "builder": "electron-builder build -w --x64",
+    "package": "npm run build && npm run builder",
+    "start": "electron --js-flags=\"--use_strict\" index.js prod"
   },
   "author": "Micheal Parks",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
     "electron": "^4.0.2",
+    "electron-builder": "^20.38.5",
     "webpack": "^4.29.0"
+  },
+  "build": {
+    "productName": "House Party",
+    "win": {
+      "target": "portable" 
+    } 
   }
 }

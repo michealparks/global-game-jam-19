@@ -10,3 +10,5 @@ export const INPUT_PUNCH_LEFT = 6
 export const INPUT_PUNCH_RIGHT = 7
 export const INPUT_PUNCH_UP = 8
 export const INPUT_PUNCH_DOWN = 9
+
+export const INPUT_PUNCH = 10

@@ -1,5 +1,6 @@
 import {
   INPUT_UP, INPUT_LEFT, INPUT_RIGHT, INPUT_DOWN,
+  INPUT_PUNCH,
   INPUT_PUNCH_LEFT, INPUT_PUNCH_RIGHT,
   INPUT_RUN
 } from '../input/input_codes.js'
@@ -32,7 +33,8 @@ export const player = {
   physics: true,
   animating: true,
   punching: false,
-  control: true
+  control: true,
+  direction: 1
 }
 
 player.translation.z = 0.6
@@ -44,12 +46,16 @@ let punchtime = 0.0
 function setRunAnimation (x, lx) {
   if (x > 0.0) {
     sprite_setAnimation(player, 'run_right')
+    player.direction = 1
   } else if (x < 0.0) {
     sprite_setAnimation(player, 'run_left')
+    player.direction = -1
   } else if (lx > 0.0) {
     sprite_setAnimation(player, 'idle_right')
+    player.direction = 1
   } else if (lx < 0.0) {
     sprite_setAnimation(player, 'idle_left')
+    player.direction = -1
   }
 }
 
@@ -85,16 +91,12 @@ export function player_update (dt) {
   // Set a punching animation
   for (let i = 0, l = inputs.length; i < l; i++) {
     switch (inputs[i]) {
-      case INPUT_PUNCH_LEFT:
+      case INPUT_PUNCH:
         if (player.punching) break
         player.punching = true
-        sprite_setAnimation(player, 'punch_left')
-        return
-      case INPUT_PUNCH_RIGHT:
-        if (player.punching) break
-        player.punching = true
-        sprite_setAnimation(player, 'punch_right')
-        return
+        sprite_setAnimation(player, player.direction > 0 ? 'punch_right' : 'punch_left')
+        return 
+
       default:
         if (player.punching && punchtime > PUNCH_TIME) {
           player.punching = false

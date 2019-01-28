@@ -11,16 +11,24 @@ import {loadAudio} from './engine/audio.js'
 Promise.all([
   loadAudio('./music/intro.mp3'),
   loadAudio('./music/party_1.mp3'),
-  loadAudio('./music/party_2.mp3'),
-  loadAudio('./music/fail.mp3')
+  loadAudio('./music/fail.mp3'),
+  loadAudio('./music/hit_1.wav'),
+  loadAudio('./music/hit_2.wav'),
+  loadAudio('./music/hit_3.wav'),
+  loadAudio('./music/hit_4.wav'),
+  loadAudio('./music/hit_5.wav'),
+  loadAudio('./music/coin.wav'),
+  loadAudio('./music/crowd.wav')
 ]).then(function (arr) {
   renderer_start()
 
   masterSceneInit({
     intro: arr[0],
     party1: arr[1],
-    party2: arr[2],
-    fail: arr[3]
+    fail: arr[2],
+    hits: [arr[3], arr[4], arr[5], arr[6], arr[7]],
+    coin: arr[8],
+    crowd: arr[9]
   })
 })
 
