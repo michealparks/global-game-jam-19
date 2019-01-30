@@ -3,7 +3,7 @@ import {m4_identity, m4_multiply} from '../utils/m4.js'
 import {program, programUniforms} from './programs.js'
 import {viewMatrix} from './camera.js'
 import {updatePhysics, updateMatrix} from '../objects/index.js'
-import {sprite_update} from '../objects/sprite.js'
+import {updateSprite} from '../objects/sprite.js'
 import {setTexture} from '../utils/texture.js'
 import {sprites, masterSceneUpdate} from '../scenes/master.js'
 
@@ -29,7 +29,7 @@ function drawObjects (objects) {
         updatePhysics(object)
       }
 
-      sprite_update(object, elapsedMS)
+      updateSprite(object, elapsedMS)
     }
 
     m4_multiply(viewMatrix, object.matrix, uMatrix)

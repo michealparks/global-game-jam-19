@@ -80,13 +80,13 @@ export function sprite (
   return sprite
 }
 
-export function sprite_setAnimation (sprite, name) {
+export function setAnimation (sprite, name) {
   sprite.currentAnimation = sprite.animations[name]
   sprite.step = sprite.currentAnimation.start
   sprite.vao = sprite.vaos[sprite.step]
 }
 
-export function sprite_update (sprite, elapsedMS) {
+export function updateSprite (sprite, elapsedMS) {
   const anim = sprite.currentAnimation
 
   if (anim === undefined) {

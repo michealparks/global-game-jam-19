@@ -2,10 +2,10 @@ import {gl} from '../engine/gl.js'
 import {camera_update, camera_setZoom, camera_setShake} from '../engine/camera.js'
 import {updateMatrix} from '../objects/index.js'
 import {player, player_update} from '../actors/player.js'
-import {sprite, sprite_setAnimation} from '../objects/sprite.js'
+import {sprite, setAnimation} from '../objects/sprite.js'
 import {startInspire, endInspire, displayText} from '../engine/text.js'
 import {furyLevel_update, furyLevel_show} from './fury_level.js'
-import {loadAudio} from '../engine/audio.js'
+import {playAudio, stopAudio} from '../engine/audio.js'
 
 let nextRoomX = 0
 let translateZ = 0.1
@@ -13,7 +13,7 @@ let translateZ = 0.1
 const SPEED = 1.8
 const ROOM_WIDTH = 48 * 3
 const VOLUME = 0.8
-const BYPASS = false
+const BYPASS = true
 
 const teenagers = [
   {name: 'tall_punk', frames: 6},
@@ -34,7 +34,6 @@ const bgs = [
 export const sprites = [player]
 export const people = []
 
-let sounds
 let shaking = false
 let a = 0, b = 0
 let numKilled = 0
@@ -62,9 +61,7 @@ function createScene (first) {
 
   nextRoomX += ROOM_WIDTH
 
-  sprites.push(p1)
-  sprites.push(p2)
-  sprites.push(p3)
+  sprites.push(p1, p2, p3)
 
   if (first) {
     const person = createPerson(teenagers[0], ROOM_WIDTH / 2)
@@ -128,6 +125,10 @@ function setTranslateZ () {
   return translateZ
 }
 
+function startPersonAnim (person) {
+  person.animating = true
+}
+
 function createPerson (info, x) {
   const person = {
     ...sprite(
@@ -145,9 +146,7 @@ function createPerson (info, x) {
     static: false,
   }
 
-  setTimeout(function () {
-    person.animating = true
-  }, Math.random() * 3000)
+  setTimeout(startPersonAnim, Math.random() * 3000, person)
 
   person.translation.z = setTranslateZ()
   person.translation.x = x || 0
@@ -156,169 +155,103 @@ function createPerson (info, x) {
   return person
 }
 
-export function masterSceneInit (s) {
-  sounds = s
+function setEvent (time, config) {
+  setTimeout(onEvent, time * 1000, config)
+}
 
+function onEvent (config) {
+  if (config.text !== undefined) {
+    displayText(config.text, config.text2)
+    if (config.dur !== undefined) {
+      setTimeout(onTextEnd, config.dur * 1000)
+    }
+  }
+
+  if (config.control !== undefined) {
+    player.control = config.control
+  }
+
+  if (config.fn !== undefined) {
+    config.fn()
+  }
+}
+
+function onTextEnd () {
+  displayText('')
+}
+
+export function masterSceneInit () {
   player.control = BYPASS
   player.translation.x = -80
-  sounds.intro.start(true, VOLUME)
-
-  const t = 3000
+  playAudio('intro', true, VOLUME)
 
   sprites.push(createSprite('car', 96, 48, -180))
 
   home = createSprite('home', 128, 128, -20)
   sprites.push(home)
-  
-  setTimeout(function () {
-    displayText('"I\'m glad I cancelled that trip to Milwaukee."')
-  }, t * 1)
 
-  setTimeout(function () {
-    displayText('')
-  }, t * 2)
-
-  setTimeout(function () {
-    displayText('"...and didn\'t tell the kids."')
-  }, t * 2.5)
-
-  setTimeout(function () {
-    displayText('')
-  }, t * 3.5)
-
-  setTimeout(function () {
-    displayText('"They\'ll be so delighted and surprised."')
-  }, t * 4)
-
-  setTimeout(function () {
-    displayText('')
-  }, t * 5)
-
-  setTimeout(function () {
-    player.control = true
-    displayText('<- W   D ->')
-  }, t * 5.5)
-
-  setTimeout(function () {
-    displayText('')
-  }, t * 6)
+  setEvent( 3.0, {dur: 3.0, text: '"I\'m glad I cancelled that trip to Milwaukee."'})
+  setEvent( 7.5, {dur: 3.0, text: '"...and didn\'t tell the kids."'})
+  setEvent(12.0, {dur: 3.0, text: '"They\'ll be so delighted and surprised."'})
+  setEvent(16.5, {dur: 3.0, text: '<- A D ->', control: true})
 }
 
 function playRandomPunch (v = VOLUME) {
-  const r = Math.random() * sounds.hits.length | 0
-  sounds.hits[r].start(false, v)
+  playAudio(`hit_${Math.random() * 5 | 0}`, false, v)
 }
 
 export function startPregame () {
+  stopAudio('intro')
+  playAudio('crowd', true, VOLUME - 0.4 < 0.0 ? 0.0 : VOLUME - 0.4)
+  displayText('')
+
+  window.nightsky.style.display = 'none'
   removeSprite(home)
+
   createScene(true)
   createScene()
 
-  window.nightsky.style.display = 'none'
-
-  sounds.intro.stop()
-
   setTimeout(function () {
     player.velocity.x = 0.0
-    sprite_setAnimation(player, 'idle_right')
+    setAnimation(player, 'idle_right')
   }, 200)
   
   player.control = false
   didPregame = true
 
-  displayText('')
+  setEvent( 2.5, {dur: 2.5, text: '"Sup bro?"'})
+  setEvent( 6.0, {dur: 2.5, text: '...'})
+  setEvent( 9.0, {dur: 2.5, text: '"Aren\'t you a little old for this party?"'})
 
-  sounds.crowd.start(true, VOLUME - 0.4)
+  setEvent(12.0, {text: 'PUNCH.', fn: playRandomPunch})
+  setEvent(12.5, {text: 'PUNCH. THIS.', fn: playRandomPunch})
+  setEvent(13.0, {text: 'PUNCH. THIS. GUY.', fn: playRandomPunch})
+  setEvent(13.5, {dur: 0.5, text: 'PUNCH. THIS. GUY. [spacebar]', fn: playRandomPunch})
 
-  const t = 2500
-
-  setTimeout(function () {
-    displayText('"Sup bro?"')
-  }, t * 1)
-
-  setTimeout(function () {
-    displayText('')
-  }, t * 2)
-
-  setTimeout(function () {
-    displayText('...')
-  }, t * 2.5)
-
-  setTimeout(function () {
-    displayText('')
-  }, t * 3)
-
-  setTimeout(function () {
-    displayText('"Aren\'t you a little old for this party?"')
-  }, t * 3.5)
-
-  setTimeout(function () {
-    displayText('')
-  }, t * 4.5)
-
-  setTimeout(function () {
-    displayText('PUNCH.')
-    playRandomPunch(1.0)
-  }, t * 5)
-
-  setTimeout(function () {
-    displayText('PUNCH. THIS.')
-    playRandomPunch(1.0)
-  }, t * 5.25)
-
-  setTimeout(function () {
-    displayText('PUNCH. THIS. GUY.')
-    playRandomPunch(1.0)
-  }, t * 5.5)
-
-  setTimeout(function () {
-    displayText('PUNCH. THIS. GUY. [spacebar]')
-    playRandomPunch(1.0)
-  }, t * 5.75)
-
-  setTimeout(startGame, t * 6.5)
+  setTimeout(startGame, 14 * 1000)
 }
 
 export function startGame () {
   displayText('')
+  playAudio('party', true, VOLUME)
   
-  sounds.party1.start(true, VOLUME)
   player.control = true
-
   didStart = true
 }
 
 function onFirstPunch () {
   furyLevel_show(true)
-
-  const t = 3000
-
-  setTimeout(function () {
-    displayText('MAINTAIN YOUR PARENTAL FURY.')
-  }, t * 1 + 1000)
-
-  setTimeout(function () {
-    displayText('')
-  }, (t * 2) + 1000)
-
-  setTimeout(function () {
-    displayText('MISSED PUNCHES HURT YOUR SOUL.')
-  }, (t * 3) + 1000)
-
-  setTimeout(function () {
-    displayText('')
-    startInspire()
-  }, (t * 4) + 1000)
+  setEvent( 4.0, {dur: 3.0, text: 'MAINTAIN YOUR PARENTAL FURY.'})
 }
 
 function endGame () {
-  sounds.party1.stop()
-  sounds.fail.start(true, VOLUME)
+  stopAudio('party')
+  playAudio('fail', true, VOLUME)
 
   gl.canvas.classList.add('game-over')
 
   player.velocity.x = 0
-  sprite_setAnimation(player, 'idle_right')
+  setAnimation(player, 'idle_right')
 
   endInspire()
 
@@ -327,20 +260,16 @@ function endGame () {
   camera_setZoom(150.0, 1500)
   camera_setShake(0.0, 0.0)
 
-  setTimeout(function () {
-    displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`)
+  setEvent(2.0, {text: `YOU VANQUISHED ${numKilled} PARTYGOERS`})
+  setEvent(4.0, {text: `YOU VANQUISHED ${numKilled} PARTYGOERS`, text2: 'BEFORE YOU LOST YOUR PASSION'})
+  setEvent(4.0, {fn: function () {
+    function reload () {
+      location.reload(false)
+    }
 
-    setTimeout(function () {
-      displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`, 'BEFORE YOU LOST YOUR PASSION')
-
-      function reload () {
-        location.reload(false)
-      }
-
-      document.addEventListener('keydown', reload)
-      document.addEventListener('click', reload)
-    }, 2000)
-  }, 2000)
+    document.addEventListener('keydown', reload)
+    document.addEventListener('click', reload)
+  }})
 }
 
 export function masterSceneUpdate (elapsedMS) {
@@ -396,7 +325,7 @@ export function masterSceneUpdate (elapsedMS) {
       if (p.dead) continue
 
       if (Math.abs(x - p.translation.x) < 10) {
-        sprite_setAnimation(p, 'fly')
+        setAnimation(p, 'fly')
 
         p.velocity.x = v * 2
 
@@ -426,8 +355,7 @@ export function masterSceneUpdate (elapsedMS) {
         numKilled++
 
         if (a === 1) {
-          r = Math.random() * sounds.hits.length | 0
-          sounds.hits[r].start(false, VOLUME)
+          playAudio(`hit_${Math.random * 5 | 0}`, false, VOLUME)
         }
       }
     }

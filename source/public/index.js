@@ -836,13 +836,13 @@ function sprite_sprite (
   return sprite
 }
 
-function sprite_setAnimation (sprite, name) {
+function setAnimation (sprite, name) {
   sprite.currentAnimation = sprite.animations[name]
   sprite.step = sprite.currentAnimation.start
   sprite.vao = sprite.vaos[sprite.step]
 }
 
-function sprite_update (sprite, elapsedMS) {
+function updateSprite (sprite, elapsedMS) {
   const anim = sprite.currentAnimation
 
   if (anim === undefined) {
@@ -1161,16 +1161,16 @@ let punchtime = 0.0
 
 function setRunAnimation (x, lx) {
   if (x > 0.0) {
-    sprite_setAnimation(player, 'run_right')
+    setAnimation(player, 'run_right')
     player.direction = 1
   } else if (x < 0.0) {
-    sprite_setAnimation(player, 'run_left')
+    setAnimation(player, 'run_left')
     player.direction = -1
   } else if (lx > 0.0) {
-    sprite_setAnimation(player, 'idle_right')
+    setAnimation(player, 'idle_right')
     player.direction = 1
   } else if (lx < 0.0) {
-    sprite_setAnimation(player, 'idle_left')
+    setAnimation(player, 'idle_left')
     player.direction = -1
   }
 }
@@ -1210,7 +1210,7 @@ function player_update (dt) {
       case INPUT_PUNCH:
         if (player.punching) break
         player.punching = true
-        sprite_setAnimation(player, player.direction > 0 ? 'punch_right' : 'punch_left')
+        setAnimation(player, player.direction > 0 ? 'punch_right' : 'punch_left')
         return 
 
       default:
@@ -1405,19 +1405,17 @@ function furyLevel_show (toShow) {
 }
 // CONCATENATED MODULE: ./src/engine/audio.js
 const context = new AudioContext()
+const audio = []
+const toPlay = {}
 
-function start (loop, vol) {
-  this.source = context.createBufferSource()
-  this.source.buffer = this.buffer
-  this.source.loop = loop || false
-  this.source.connect(this.gainNode)
+function start (audio, loop, vol) {
+  audio.source = context.createBufferSource()
+  audio.source.buffer = audio.buffer
+  audio.source.loop = loop || false
+  audio.source.connect(audio.gainNode)
 
-  this.gainNode.gain.value = vol
-  this.source.start(1)
-}
-
-function stop () {
-  this.source.stop(0)
+  audio.gainNode.gain.value = vol
+  audio.source.start(1)
 }
 
 function crossfade (val, max, el) {
@@ -1433,25 +1431,42 @@ function createSource (buffer) {
   const gainNode = context.createGain()
   gainNode.connect(context.destination)
 
-  return {source: undefined, buffer, gainNode, start, stop}
+  return {source: undefined, buffer, gainNode}
 }
 
 function arrayBuffer (res) {
   return res.arrayBuffer()
 }
 
-function loadAudio (url) {
-  return fetch(url).then(arrayBuffer).then(function (buf) {
-    return new Promise(function (resolve) {
-      context.decodeAudioData(buf, function (data) {
-        return resolve(createSource(data))
-      })
+function loadAudio (key, url) {
+  fetch(url).then(arrayBuffer).then(function (buf) {
+    context.decodeAudioData(buf, function (data) {
+      audio[key] = createSource(data)
+
+      if (toPlay[key] !== undefined) {
+        start(audio[key], toPlay[key].loop, toPlay[key].vol)
+        delete toPlay[key]
+      }
     })
   })
 }
 
+function playAudio (key, loop, vol) {
+  if (audio[key] === undefined) {
+    toPlay[key] = {loop, vol}
+    return
+  }
 
+  start(audio[key], loop, vol)
+}
 
+function stopAudio (key, loop, vol) {
+  const a = audio[key]
+  if (a === undefined) return
+  if (a.source === undefined) return
+
+  a.source.stop(0)
+}
 // CONCATENATED MODULE: ./src/scenes/master.js
 
 
@@ -1468,7 +1483,7 @@ let translateZ = 0.1
 const SPEED = 1.8
 const ROOM_WIDTH = 48 * 3
 const VOLUME = 0.8
-const BYPASS = false
+const BYPASS = true
 
 const teenagers = [
   {name: 'tall_punk', frames: 6},
@@ -1489,7 +1504,6 @@ const bgs = [
 const sprites = [player]
 const people = []
 
-let sounds
 let shaking = false
 let master_a = 0, b = 0
 let numKilled = 0
@@ -1517,9 +1531,7 @@ function createScene (first) {
 
   nextRoomX += ROOM_WIDTH
 
-  sprites.push(p1)
-  sprites.push(p2)
-  sprites.push(p3)
+  sprites.push(p1, p2, p3)
 
   if (first) {
     const person = createPerson(teenagers[0], ROOM_WIDTH / 2)
@@ -1583,6 +1595,10 @@ function setTranslateZ () {
   return translateZ
 }
 
+function startPersonAnim (person) {
+  person.animating = true
+}
+
 function createPerson (info, x) {
   const person = {
     ...sprite_sprite(
@@ -1600,9 +1616,7 @@ function createPerson (info, x) {
     static: false,
   }
 
-  setTimeout(function () {
-    person.animating = true
-  }, Math.random() * 3000)
+  setTimeout(startPersonAnim, Math.random() * 3000, person)
 
   person.translation.z = setTranslateZ()
   person.translation.x = x || 0
@@ -1611,169 +1625,103 @@ function createPerson (info, x) {
   return person
 }
 
-function masterSceneInit (s) {
-  sounds = s
+function setEvent (time, config) {
+  setTimeout(onEvent, time * 1000, config)
+}
 
+function onEvent (config) {
+  if (config.text !== undefined) {
+    displayText(config.text, config.text2)
+    if (config.dur !== undefined) {
+      setTimeout(onTextEnd, config.dur * 1000)
+    }
+  }
+
+  if (config.control !== undefined) {
+    player.control = config.control
+  }
+
+  if (config.fn !== undefined) {
+    config.fn()
+  }
+}
+
+function onTextEnd () {
+  displayText('')
+}
+
+function masterSceneInit () {
   player.control = BYPASS
   player.translation.x = -80
-  sounds.intro.start(true, VOLUME)
-
-  const t = 3000
+  playAudio('intro', true, VOLUME)
 
   sprites.push(createSprite('car', 96, 48, -180))
 
   home = createSprite('home', 128, 128, -20)
   sprites.push(home)
-  
-  setTimeout(function () {
-    displayText('"I\'m glad I cancelled that trip to Milwaukee."')
-  }, t * 1)
 
-  setTimeout(function () {
-    displayText('')
-  }, t * 2)
-
-  setTimeout(function () {
-    displayText('"...and didn\'t tell the kids."')
-  }, t * 2.5)
-
-  setTimeout(function () {
-    displayText('')
-  }, t * 3.5)
-
-  setTimeout(function () {
-    displayText('"They\'ll be so delighted and surprised."')
-  }, t * 4)
-
-  setTimeout(function () {
-    displayText('')
-  }, t * 5)
-
-  setTimeout(function () {
-    player.control = true
-    displayText('<- W   D ->')
-  }, t * 5.5)
-
-  setTimeout(function () {
-    displayText('')
-  }, t * 6)
+  setEvent( 3.0, {dur: 3.0, text: '"I\'m glad I cancelled that trip to Milwaukee."'})
+  setEvent( 7.5, {dur: 3.0, text: '"...and didn\'t tell the kids."'})
+  setEvent(12.0, {dur: 3.0, text: '"They\'ll be so delighted and surprised."'})
+  setEvent(16.5, {dur: 3.0, text: '<- A D ->', control: true})
 }
 
 function playRandomPunch (v = VOLUME) {
-  const r = Math.random() * sounds.hits.length | 0
-  sounds.hits[r].start(false, v)
+  playAudio(`hit_${Math.random() * 5 | 0}`, false, v)
 }
 
 function startPregame () {
+  stopAudio('intro')
+  playAudio('crowd', true, VOLUME - 0.4 < 0.0 ? 0.0 : VOLUME - 0.4)
+  displayText('')
+
+  window.nightsky.style.display = 'none'
   removeSprite(home)
+
   createScene(true)
   createScene()
 
-  window.nightsky.style.display = 'none'
-
-  sounds.intro.stop()
-
   setTimeout(function () {
     player.velocity.x = 0.0
-    sprite_setAnimation(player, 'idle_right')
+    setAnimation(player, 'idle_right')
   }, 200)
   
   player.control = false
   didPregame = true
 
-  displayText('')
+  setEvent( 2.5, {dur: 2.5, text: '"Sup bro?"'})
+  setEvent( 6.0, {dur: 2.5, text: '...'})
+  setEvent( 9.0, {dur: 2.5, text: '"Aren\'t you a little old for this party?"'})
 
-  sounds.crowd.start(true, VOLUME - 0.4)
+  setEvent(12.0, {text: 'PUNCH.', fn: playRandomPunch})
+  setEvent(12.5, {text: 'PUNCH. THIS.', fn: playRandomPunch})
+  setEvent(13.0, {text: 'PUNCH. THIS. GUY.', fn: playRandomPunch})
+  setEvent(13.5, {dur: 0.5, text: 'PUNCH. THIS. GUY. [spacebar]', fn: playRandomPunch})
 
-  const t = 2500
-
-  setTimeout(function () {
-    displayText('"Sup bro?"')
-  }, t * 1)
-
-  setTimeout(function () {
-    displayText('')
-  }, t * 2)
-
-  setTimeout(function () {
-    displayText('...')
-  }, t * 2.5)
-
-  setTimeout(function () {
-    displayText('')
-  }, t * 3)
-
-  setTimeout(function () {
-    displayText('"Aren\'t you a little old for this party?"')
-  }, t * 3.5)
-
-  setTimeout(function () {
-    displayText('')
-  }, t * 4.5)
-
-  setTimeout(function () {
-    displayText('PUNCH.')
-    playRandomPunch(1.0)
-  }, t * 5)
-
-  setTimeout(function () {
-    displayText('PUNCH. THIS.')
-    playRandomPunch(1.0)
-  }, t * 5.25)
-
-  setTimeout(function () {
-    displayText('PUNCH. THIS. GUY.')
-    playRandomPunch(1.0)
-  }, t * 5.5)
-
-  setTimeout(function () {
-    displayText('PUNCH. THIS. GUY. [spacebar]')
-    playRandomPunch(1.0)
-  }, t * 5.75)
-
-  setTimeout(startGame, t * 6.5)
+  setTimeout(startGame, 14 * 1000)
 }
 
 function startGame () {
   displayText('')
+  playAudio('party', true, VOLUME)
   
-  sounds.party1.start(true, VOLUME)
   player.control = true
-
   didStart = true
 }
 
 function onFirstPunch () {
   furyLevel_show(true)
-
-  const t = 3000
-
-  setTimeout(function () {
-    displayText('MAINTAIN YOUR PARENTAL FURY.')
-  }, t * 1 + 1000)
-
-  setTimeout(function () {
-    displayText('')
-  }, (t * 2) + 1000)
-
-  setTimeout(function () {
-    displayText('MISSED PUNCHES HURT YOUR SOUL.')
-  }, (t * 3) + 1000)
-
-  setTimeout(function () {
-    displayText('')
-    startInspire()
-  }, (t * 4) + 1000)
+  setEvent( 4.0, {dur: 3.0, text: 'MAINTAIN YOUR PARENTAL FURY.'})
 }
 
 function endGame () {
-  sounds.party1.stop()
-  sounds.fail.start(true, VOLUME)
+  stopAudio('party')
+  playAudio('fail', true, VOLUME)
 
   gl.canvas.classList.add('game-over')
 
   player.velocity.x = 0
-  sprite_setAnimation(player, 'idle_right')
+  setAnimation(player, 'idle_right')
 
   endInspire()
 
@@ -1782,20 +1730,16 @@ function endGame () {
   camera_setZoom(150.0, 1500)
   camera_setShake(0.0, 0.0)
 
-  setTimeout(function () {
-    displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`)
+  setEvent(2.0, {text: `YOU VANQUISHED ${numKilled} PARTYGOERS`})
+  setEvent(4.0, {text: `YOU VANQUISHED ${numKilled} PARTYGOERS`, text2: 'BEFORE YOU LOST YOUR PASSION'})
+  setEvent(4.0, {fn: function () {
+    function reload () {
+      location.reload(false)
+    }
 
-    setTimeout(function () {
-      displayText(`YOU VANQUISHED ${numKilled} PARTYGOERS`, 'BEFORE YOU LOST YOUR PASSION')
-
-      function reload () {
-        location.reload(false)
-      }
-
-      document.addEventListener('keydown', reload)
-      document.addEventListener('click', reload)
-    }, 2000)
-  }, 2000)
+    document.addEventListener('keydown', reload)
+    document.addEventListener('click', reload)
+  }})
 }
 
 function masterSceneUpdate (elapsedMS) {
@@ -1851,7 +1795,7 @@ function masterSceneUpdate (elapsedMS) {
       if (p.dead) continue
 
       if (Math.abs(x - p.translation.x) < 10) {
-        sprite_setAnimation(p, 'fly')
+        setAnimation(p, 'fly')
 
         p.velocity.x = v * 2
 
@@ -1881,8 +1825,7 @@ function masterSceneUpdate (elapsedMS) {
         numKilled++
 
         if (master_a === 1) {
-          r = Math.random() * sounds.hits.length | 0
-          sounds.hits[r].start(false, VOLUME)
+          playAudio(`hit_${Math.random * 5 | 0}`, false, VOLUME)
         }
       }
     }
@@ -1938,7 +1881,7 @@ function drawObjects (objects) {
         updatePhysics(renderer_object)
       }
 
-      sprite_update(renderer_object, renderer_elapsedMS)
+      updateSprite(renderer_object, renderer_elapsedMS)
     }
 
     m4_multiply(viewMatrix, renderer_object.matrix, uMatrix)
@@ -1982,31 +1925,20 @@ function renderer_pause () {
 
 
 
+loadAudio('intro', './music/intro.mp3')
+loadAudio('party', './music/party_1.mp3')
+loadAudio('fail', './music/fail.mp3')
+loadAudio('hit_0', './music/hit_1.wav')
+loadAudio('hit_1', './music/hit_2.wav')
+loadAudio('hit_2', './music/hit_3.wav')
+loadAudio('hit_3', './music/hit_4.wav')
+loadAudio('hit_4', './music/hit_5.wav')
+loadAudio('coin', './music/coin.wav')
+loadAudio('crowd', './music/crowd.wav')
 
+renderer_start()
 
-Promise.all([
-  loadAudio('./music/intro.mp3'),
-  loadAudio('./music/party_1.mp3'),
-  loadAudio('./music/fail.mp3'),
-  loadAudio('./music/hit_1.wav'),
-  loadAudio('./music/hit_2.wav'),
-  loadAudio('./music/hit_3.wav'),
-  loadAudio('./music/hit_4.wav'),
-  loadAudio('./music/hit_5.wav'),
-  loadAudio('./music/coin.wav'),
-  loadAudio('./music/crowd.wav')
-]).then(function (arr) {
-  renderer_start()
-
-  masterSceneInit({
-    intro: arr[0],
-    party1: arr[1],
-    fail: arr[2],
-    hits: [arr[3], arr[4], arr[5], arr[6], arr[7]],
-    coin: arr[8],
-    crowd: arr[9]
-  })
-})
+masterSceneInit()
 
 let wasPaused = renderer_isPaused
 document.addEventListener('visibilitychange', function () {
@@ -2017,8 +1949,6 @@ document.addEventListener('visibilitychange', function () {
     renderer_start()
   }
 }, {passive: true, capture: false})
-
-new FontFace('FreePixel', './FreePixel.woff2')
 
 
 /***/ })

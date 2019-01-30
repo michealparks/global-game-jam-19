@@ -4,7 +4,7 @@ import {
   INPUT_PUNCH_LEFT, INPUT_PUNCH_RIGHT,
   INPUT_RUN
 } from '../input/input_codes.js'
-import {sprite, sprite_setAnimation} from '../objects/sprite.js'
+import {sprite, setAnimation} from '../objects/sprite.js'
 import {inputs} from '../input/index.js'
 
 const SPEED_WALK = 1.6
@@ -45,16 +45,16 @@ let punchtime = 0.0
 
 function setRunAnimation (x, lx) {
   if (x > 0.0) {
-    sprite_setAnimation(player, 'run_right')
+    setAnimation(player, 'run_right')
     player.direction = 1
   } else if (x < 0.0) {
-    sprite_setAnimation(player, 'run_left')
+    setAnimation(player, 'run_left')
     player.direction = -1
   } else if (lx > 0.0) {
-    sprite_setAnimation(player, 'idle_right')
+    setAnimation(player, 'idle_right')
     player.direction = 1
   } else if (lx < 0.0) {
-    sprite_setAnimation(player, 'idle_left')
+    setAnimation(player, 'idle_left')
     player.direction = -1
   }
 }
@@ -94,7 +94,7 @@ export function player_update (dt) {
       case INPUT_PUNCH:
         if (player.punching) break
         player.punching = true
-        sprite_setAnimation(player, player.direction > 0 ? 'punch_right' : 'punch_left')
+        setAnimation(player, player.direction > 0 ? 'punch_right' : 'punch_left')
         return 
 
       default:
