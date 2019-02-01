@@ -1714,6 +1714,9 @@ function startGame () {
 function onFirstPunch () {
   furyLevel_show(true)
   setEvent( 4.0, {dur: 3.0, text: 'MAINTAIN YOUR PARENTAL FURY.'})
+  setEvent( 8.0, {fn: function () {
+    startInspire()
+  }})
 }
 
 function endGame () {
