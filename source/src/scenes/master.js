@@ -13,7 +13,7 @@ let translateZ = 0.1
 const SPEED = 1.8
 const ROOM_WIDTH = 48 * 3
 const VOLUME = 0.8
-const BYPASS = true
+const BYPASS = false
 
 const teenagers = [
   {name: 'tall_punk', frames: 6},

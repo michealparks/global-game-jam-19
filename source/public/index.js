@@ -1309,6 +1309,7 @@ const quotes = [
   'GOTTA FIX THAT CREAKY FLOORBOARD.',
   'SOMETIMES YOU JUST GOTTA EAT THE HAM SANDWICH.',
   'REX IS DUE FOR A CHECKUP.'
+  // HOME IS NO PLACE FOR ARMCHAIR PHILOSOPHERS
 ]
 
 const order = []
@@ -1467,6 +1468,7 @@ function stopAudio (key, loop, vol) {
 
   a.source.stop(0)
 }
+
 // CONCATENATED MODULE: ./src/scenes/master.js
 
 
@@ -1483,7 +1485,7 @@ let translateZ = 0.1
 const SPEED = 1.8
 const ROOM_WIDTH = 48 * 3
 const VOLUME = 0.8
-const BYPASS = true
+const BYPASS = false
 
 const teenagers = [
   {name: 'tall_punk', frames: 6},

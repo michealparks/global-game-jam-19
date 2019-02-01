@@ -62,6 +62,7 @@ app.once('ready', function () {
   }))
 
   if (__dev__) {
+    return
     win.openDevTools({mode: 'detach'})
   }
 })
