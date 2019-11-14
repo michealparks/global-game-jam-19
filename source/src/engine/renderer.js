@@ -11,7 +11,7 @@ let elapsedMS = 0.0
 let thenMS = performance.now()
 let tickID = -1
 
-export let renderer_isPaused = true
+export let framesPaused = true
 
 let uMatrix = m4_identity()
 
@@ -59,11 +59,11 @@ function gameTick (nowMS) {
 }
 
 export function renderer_start () {
-  renderer_isPaused = false
+  framesPaused = false
   tickID = window.requestAnimationFrame(gameTick)
 }
 
 export function renderer_pause () {
-  renderer_isPaused = true
+  framesPaused = true
   return window.cancelAnimationFrame(tickID)
 }

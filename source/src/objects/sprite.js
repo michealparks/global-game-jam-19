@@ -17,7 +17,8 @@ export function sprite (
   width,
   height,
   frames = 1,
-  animations
+  animations,
+  texture
 ) {
   const halfWidth = width / 2.0
   const halfHeight = height / 2.0
@@ -29,8 +30,21 @@ export function sprite (
     positions[i + 1] *= halfHeight
   }
 
-  for (let n, s = 1 / frames, i = 0; i < frames; i++) {
-    n = s * i
+  const tw = texture.width
+  const th = texture.height
+  const w = texture.frameWidth / tw
+  const h = texture.frameHeight / th
+  const nHoriz = tw / texture.frameWidth
+  for (let x = 0.0, y = 0.0, i = 0; i < frames; i++) {
+    x = (i * w) % nHoriz
+    y = ((i / nHoriz) | 0) * h 
+
+    const data = new Float32Array([
+      x + 0 + 0.001, y + 0 + 0.001,
+      x + w - 0.001, y + 0 + 0.001,
+      x + 0 + 0.001, y + h - 0.001,
+      x + w - 0.001, y + h - 0.001
+    ])
 
     vaos.push(initVao('sprite', indices, [
       {
@@ -39,12 +53,7 @@ export function sprite (
         size: 2,
       }, {
         name: 'aTexturePosition',
-        data: new Float32Array([
-          0 + n, 0.01,
-          s + n, 0.01,
-          0 + n, 0.99,
-          s + n, 0.99,
-        ]),
+        data: data,
         size: 2
       }
     ]))
@@ -64,7 +73,7 @@ export function sprite (
     vaos,
     vao: vaos[0],
     numIndices: indices.length,
-    textureId: loadTexture(`./sprites/${filename}.png`),
+    textureId: loadTexture(`./sprites/sheets/${filename}.png`),
     step: 0,
     lastStepTime: 0.0,
   }

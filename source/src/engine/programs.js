@@ -1,12 +1,10 @@
-import vertexSource from '../shaders/vertex.glsl'
-import fragmentSource from '../shaders/fragment.glsl'
-
+import {shaders} from './gl-compat.js'
 import {gl} from './gl.js'
-import {createShader, createProgram} from '../utils/webgl.js'
+import {createShader, createProgram} from './util.js'
 
 export const program = createProgram(
-  createShader(gl.VERTEX_SHADER, vertexSource),
-  createShader(gl.FRAGMENT_SHADER, fragmentSource)
+  createShader(gl.VERTEX_SHADER, shaders.vertex),
+  createShader(gl.FRAGMENT_SHADER, shaders.frag)
 )
 
 export const programUniforms = {

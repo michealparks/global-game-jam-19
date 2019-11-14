@@ -1,6 +1,7 @@
-const context = new AudioContext()
 const audio = []
 const toPlay = {}
+
+let context
 
 function start (audio, loop, vol) {
   audio.source = context.createBufferSource()
@@ -30,6 +31,10 @@ function createSource (buffer) {
 
 function arrayBuffer (res) {
   return res.arrayBuffer()
+}
+
+export function initAudio (c) {
+  context = c
 }
 
 export function loadAudio (key, url) {

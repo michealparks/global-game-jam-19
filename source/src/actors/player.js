@@ -25,7 +25,9 @@ export const player = {
       run_right: {start: 9, end: 15, speed: 80},
       punch_right: {start: 16, end: 17, speed: PUNCH_TIME},
       punch_left: {start: 18, end: 19, speed: PUNCH_TIME}
-    }
+    },
+    /* texture */
+    {width: 256, height: 128, frameWidth: 32, frameHeight: 32}
   ),
 
   speed: SPEED_WALK,
@@ -44,6 +46,7 @@ let accumulator = 0.0
 let punchtime = 0.0
 
 function setRunAnimation (x, lx) {
+  console.log(x, lx)
   if (x > 0.0) {
     setAnimation(player, 'run_right')
     player.direction = 1
@@ -95,14 +98,13 @@ export function player_update (dt) {
         if (player.punching) break
         player.punching = true
         setAnimation(player, player.direction > 0 ? 'punch_right' : 'punch_left')
-        return 
-
-      default:
-        if (player.punching && punchtime > PUNCH_TIME) {
-          player.punching = false
-          setRunAnimation(x, lx)
-        }
+        return
     }
+  }
+
+  if (player.punching && punchtime > PUNCH_TIME) {
+    player.punching = false
+    setRunAnimation(player.velocity.x, lx)
   }
 
   if (lx !== x) {

@@ -9,9 +9,7 @@ export function createShader (type, source) {
     return shader
   }
 
-  if (__dev__) {
-    console.error('Error compiling shader: ', gl.getShaderInfoLog(shader))
-  }
+  console.error('Error compiling shader: ', gl.getShaderInfoLog(shader))
 
   gl.deleteShader(shader)
 }

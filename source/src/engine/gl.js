@@ -1,9 +1,9 @@
+import {canvas, gl} from './gl-compat.js'
 import {m4_perspective} from '../utils/m4.js'
 import {degToRad} from '../utils/math.js'
 
-/**
- * Webgl and canvas related boilerplate setup
- */
+export {gl} from './gl-compat.js'
+
 function resizeCanvas () {
   const c = gl.canvas
   const realToCSSPixels = window.devicePixelRatio
@@ -20,13 +20,6 @@ function resizeCanvas () {
     gl.viewport(0, 0, c.width, c.height)
   }
 }
-
-export const canvas = document.getElementById('canvas')
-
-export const gl = canvas.getContext('webgl2', {
-  antialias: true,
-  powerPreference: 'high-performance'
-})
 
 const fov = degToRad(30.0)
 const zNear = 10.0

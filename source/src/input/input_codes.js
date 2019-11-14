@@ -12,3 +12,12 @@ export const INPUT_PUNCH_UP = 8
 export const INPUT_PUNCH_DOWN = 9
 
 export const INPUT_PUNCH = 10
+
+export function translateInputs (inputs) {
+  return inputs.map(function (code) {
+    if (INPUT_PUNCH_LEFT)  return 'punch left'
+    if (INPUT_PUNCH_RIGHT) return 'punch right'
+    if (INPUT_PUNCH_UP)    return 'punch up'
+    if (INPUT_PUNCH_DOWN)  return 'punch down'
+  })
+}

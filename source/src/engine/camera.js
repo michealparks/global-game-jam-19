@@ -12,7 +12,7 @@ import {easeOutQuint} from '../utils/easing.js'
 let cameraMatrix = m4_identity()
 export let viewMatrix = m4_identity()
 
-let zoom = 130.0
+let zoom = 100.0
 let nextZoom = 0.0
 let inc = 0.0
 let steps = 800

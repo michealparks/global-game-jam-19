@@ -1,8 +1,6 @@
 const {resolve} = require('path')
 const webpack = require('webpack')
-
-console.log(process.argv)
-const __dev__ = process.argv[3] === 'dev'
+const __dev__ = process.argv[2] === 'dev'
 
 const config = {
   mode: __dev__ ? 'development' : 'production',
@@ -26,6 +24,7 @@ const config = {
     new webpack.optimize.ModuleConcatenationPlugin(),
     new webpack.NamedModulesPlugin(),
     new webpack.DefinePlugin({
+      '__webgl2': false,
       '__root__': JSON.stringify(__dirname),
       '__dev__': process.env.NODE_ENV === 'development',
       '__darwin__': process.platform === 'darwin',
@@ -33,7 +32,7 @@ const config = {
       '__win32__': process.platform === 'win32',
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
       '__version__': JSON.stringify(require('./package.json').version),
-      '__noop__': '() => {}'
+      '__noop__': 'function () {}'
     })
   ],
   stats: {
@@ -51,6 +50,7 @@ const report = (err, stats) => {
 
 if (__dev__) {
   webpack(config).watch({ignored: /node_modules/}, report)
+  require('./server')
 } else {
   webpack(config).run(report)
 }

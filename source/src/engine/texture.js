@@ -30,11 +30,11 @@ function onload (e) {
 }
 
 function isPowerOf2 (val) {
-  return (val & (val - 1)) === 0
+  return (val & (val - 1)) == 0
 }
 
-function onerror (err) {
-  if (__dev__) console.error(err)
+function onerror (e) {
+  if (__dev__) console.log(e)
 }
 
 export function loadTexture (url) {

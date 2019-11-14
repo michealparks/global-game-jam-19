@@ -5,10 +5,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "electron --js-flags=\"--use_strict\" index.js dev",
-    "build": "node --use-strict webpack prod",
+    "build": "node --use_strict webpack prod",
     "builder": "electron-builder build -w --x64",
     "package": "npm run build && npm run builder",
-    "start": "electron --js-flags=\"--use_strict\" index.js prod"
+    "start": "electron --js-flags=\"--use_strict\" index.js prod",
+    "start:server": "node --use_strict webpack dev"
   },
   "author": "Micheal Parks",
   "license": "ISC",

@@ -79,13 +79,15 @@ function createScene (first) {
   }
 }
 
-function createSprite (name, w, h, x) {
+function createSprite (name, w, h, x, texture) {
   const item = {
     ...sprite(
       name,   /* filename */
-      w,          /* width */
-      h,          /* height */
-      1
+      w,      /* width */
+      h,      /* height */
+      1,
+      undefined,
+      texture
     ),
     static: true
   }
@@ -104,7 +106,8 @@ function createRoom (info, x) {
       48,          /* width */
       48,          /* height */
       info.frames, /* frames */
-      {idle: {start: 0, end: frames - 1, speed: 200}}
+      {idle: {start: 0, end: info.frames - 1, speed: 200}},
+      {width: 64 * info.frames, height: 64, frameWidth: 48, frameHeight: 48}
     ),
     static: frames > 1
   }
@@ -136,10 +139,13 @@ function createPerson (info, x) {
       32,
       32,
       info.frames,
+      // animations
       {
         idle: {start: 0, end: 1, speed: 400},
         fly: {start: 2, end: 2, speed: 400}
-      }
+      },
+      // texture
+      {width: 128, height: 64, frameWidth: 32, frameHeight: 32}
     ),
     dead: false,
     timeDead: 0.0,
@@ -185,15 +191,18 @@ export function masterSceneInit () {
   player.translation.x = -80
   playAudio('intro', true, VOLUME)
 
-  sprites.push(createSprite('car', 96, 48, -180))
+  sprites.push(createSprite('car', 96, 48, -180, {width: 64, height: 32, frameWidth: 64, frameHeight: 32}))
 
-  home = createSprite('home', 128, 128, -20)
+  home = createSprite('home', 128, 128, -20, {width: 64, height: 64, frameWidth: 64, frameHeight: 64})
   sprites.push(home)
 
   setEvent( 3.0, {dur: 3.0, text: '"I\'m glad I cancelled that trip to Milwaukee."'})
   setEvent( 7.5, {dur: 3.0, text: '"...and didn\'t tell the kids."'})
   setEvent(12.0, {dur: 3.0, text: '"They\'ll be so delighted and surprised."'})
-  setEvent(16.5, {dur: 3.0, text: '<- A D ->', control: true})
+  setEvent(16.5, {dur: 3.0, text: '<- A D ->', control: true, fn: function () {
+    setAnimation(player, 'run_right')
+    player.velocity.x = 1.6
+  }})
 }
 
 function playRandomPunch (v = VOLUME) {
@@ -236,6 +245,8 @@ export function startGame () {
   playAudio('party', true, VOLUME)
   
   player.control = true
+  player.velocity.x = 1.6
+  setAnimation(player, 'run_right')
   didStart = true
 }
 
@@ -260,7 +271,7 @@ function endGame () {
 
   furyLevel_show(false)
 
-  camera_setZoom(150.0, 1500)
+  camera_setZoom(180.0, 1500)
   camera_setShake(0.0, 0.0)
 
   setEvent(2.0, {text: `YOU VANQUISHED ${numKilled} PARTYGOERS`})
@@ -270,6 +281,7 @@ function endGame () {
       location.reload(false)
     }
 
+    document.addEventListener('touchstart', reload)
     document.addEventListener('keydown', reload)
     document.addEventListener('click', reload)
   }})
@@ -278,7 +290,7 @@ function endGame () {
 export function masterSceneUpdate (elapsedMS) {
   const {x} = player.translation
 
-  camera_update(x)
+  camera_update(x + 20)
 
   if (didLose) return
 
