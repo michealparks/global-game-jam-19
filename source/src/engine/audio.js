@@ -9,7 +9,7 @@ function start (audio, loop, vol) {
   audio.source.loop = loop || false
   audio.source.connect(audio.gainNode)
 
-  audio.gainNode.gain.value = vol
+  audio.gainNode.gain.value = 1.0
   audio.source.start(1)
 }
 

@@ -12,7 +12,7 @@ let translateZ = 0.1
 
 const SPEED = 1.8
 const ROOM_WIDTH = 48 * 3
-const VOLUME = 0.8
+const VOLUME = 1.0
 const BYPASS = false
 
 const teenagers = [

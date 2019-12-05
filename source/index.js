@@ -32,6 +32,7 @@ if (__dev__) {
 
 app.commandLine.appendSwitch('disable-renderer-backgrounding')
 app.commandLine.appendSwitch('js-flags', '--use_strict')
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 app.once('ready', function () {
   const {bounds} = electron.screen.getPrimaryDisplay()
@@ -62,7 +63,6 @@ app.once('ready', function () {
   }))
 
   if (__dev__) {
-    return
     win.openDevTools({mode: 'detach'})
   }
 })
