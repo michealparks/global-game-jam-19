@@ -9,13 +9,15 @@
     "builder": "electron-builder build -w --x64",
     "package": "npm run build && npm run builder",
     "start": "electron --js-flags=\"--use_strict\" index.js prod",
-    "start:server": "node --use_strict webpack dev"
+    "start:server": "node --use_strict webpack dev",
+    "gh-pages": "node ./scripts/gh-pages.js"
   },
   "author": "Micheal Parks",
   "license": "ISC",
   "devDependencies": {
     "electron": "^12.0.2",
     "electron-builder": "^22.10.5",
+    "gh-pages": "^3.1.0",
     "webpack": "^5.28.0"
   },
   "build": {

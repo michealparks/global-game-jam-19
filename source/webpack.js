@@ -29,11 +29,13 @@ const config = {
       '__darwin__': process.platform === 'darwin',
       '__linux__': process.platform === 'linux',
       '__win32__': process.platform === 'win32',
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
       '__version__': JSON.stringify(require('./package.json').version),
       '__noop__': 'function () {}'
     })
-  ]
+  ],
+  stats: {
+    errorDetails: true
+  }
 }
 
 const report = (err, stats) => {
