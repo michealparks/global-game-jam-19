@@ -1,7 +1,6 @@
-import {gl} from '../engine/gl'
-import {loadTexture} from '../utils/texture'
-import {initVao} from '../engine/programs'
-import {object, updateMatrix} from './index'
+import { texture } from '../engine/texture'
+import { initVao } from '../engine/programs'
+import { object, updateMatrix } from './index'
 
 const template = new Float32Array([
   -1, +1, // 0 lb    2---3
@@ -12,14 +11,14 @@ const template = new Float32Array([
 
 const indices = new Uint16Array([3, 2, 0, 3, 0, 1])
 
-export function sprite (
+export const sprite = (
   filename,
   width,
   height,
   frames = 1,
   animations,
-  texture
-) {
+  tex
+) => {
   const halfWidth = width / 2.0
   const halfHeight = height / 2.0
   const positions = new Float32Array(template)
@@ -30,11 +29,14 @@ export function sprite (
     positions[i + 1] *= halfHeight
   }
 
-  const tw = texture.width
-  const th = texture.height
-  const w = texture.frameWidth / tw
-  const h = texture.frameHeight / th
-  const nHoriz = tw / texture.frameWidth
+  const tw = tex.width
+  const th = tex.height
+  const w = tex.frameWidth / tw
+  const h = tex.frameHeight / th
+  const nHoriz = tw / tex.frameWidth
+
+  
+
   for (let x = 0.0, y = 0.0, i = 0; i < frames; i++) {
     x = (i * w) % nHoriz
     y = ((i / nHoriz) | 0) * h 
@@ -73,7 +75,7 @@ export function sprite (
     vaos,
     vao: vaos[0],
     numIndices: indices.length,
-    textureId: loadTexture(`./sprites/sheets/${filename}.png`),
+    textureId: texture.load(`./sprites/sheets/${filename}.png`),
     step: 0,
     lastStepTime: 0.0,
   }

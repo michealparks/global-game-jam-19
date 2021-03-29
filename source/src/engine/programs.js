@@ -1,36 +1,78 @@
-import {shaders} from './gl-compat.js'
-import {gl} from './gl.js'
-import {createShader, createProgram} from './util.js'
+import { gl } from './gl.js'
+
+const { context } = gl
+
+const createShader = (type, source) => {
+  const shader = context.createShader(type)
+  context.shaderSource(shader, source)
+  context.compileShader(shader)
+
+  if (context.getShaderParameter(shader, context.COMPILE_STATUS)) {
+    return shader
+  }
+
+  console.error('Error compiling shader: ', context.getShaderInfoLog(shader))
+
+  context.deleteShader(shader)
+}
+
+const createProgram = (vertex, fragment, attribs, locations) => {
+  const program = context.createProgram()
+  context.attachShader(program, vertex)
+  context.attachShader(program, fragment)
+
+  if (attribs !== undefined) {
+    for (let i = 0; i < attribs.length; i++) {
+      context.bindAttribLocation(program, locations !== undefined ? locations[i] : i, attribs[i])
+    }
+  }
+  
+  context.linkProgram(program)
+  
+  if (context.getProgramParameter(program, context.LINK_STATUS)) {
+    return program
+  }
+
+  if (__dev__) {
+    console.error('Error compiling program: ', context.getProgramInfoLog(program))
+  }
+
+  context.deleteProgram(program)
+}
+
 
 export const program = createProgram(
-  createShader(gl.VERTEX_SHADER, shaders.vertex),
-  createShader(gl.FRAGMENT_SHADER, shaders.frag)
+  createShader(context.VERTEX_SHADER, gl.shaders.vertex),
+  createShader(context.FRAGMENT_SHADER, gl.shaders.frag)
 )
 
 export const programUniforms = {
-  uMatrix: gl.getUniformLocation(program, 'uMatrix'),
-  uAlpha: gl.getUniformLocation(program, 'uAlpha'),
-  uSampler: gl.getUniformLocation(program, 'uSampler'),
+  uMatrix: context.getUniformLocation(program, 'uMatrix'),
+  uAlpha: context.getUniformLocation(program, 'uAlpha'),
+  uSampler: context.getUniformLocation(program, 'uSampler'),
 }
 
-export function initVao (pName, indices, attribs) {
-  const vao = gl.createVertexArray()
-  gl.bindVertexArray(vao)
+export const initVao = (pName, indices, attribs) => {
+  const vao = context.createVertexArray()
+  context.bindVertexArray(vao)
 
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer())
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW)
+  context.bindBuffer(context.ELEMENT_ARRAY_BUFFER, context.createBuffer())
+  context.bufferData(context.ELEMENT_ARRAY_BUFFER, indices, context.STATIC_DRAW)
 
-  for (let a, loc, i = 0, l = attribs.length; i < l; i++) {
-    a = attribs[i]
-    loc = gl.getAttribLocation(program, a.name)
+  for (const attrib of attribs) {
+    const index = context.getAttribLocation(program, attrib.name)
+    context.bindBuffer(context.ARRAY_BUFFER, context.createBuffer())
+    context.bufferData(context.ARRAY_BUFFER, attrib.data, context.STATIC_DRAW)
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
-    gl.bufferData(gl.ARRAY_BUFFER, a.data, gl.STATIC_DRAW)
-    gl.vertexAttribPointer(loc, a.size, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(loc)
+    const type = context.FLOAT
+    const normalized = false
+    const stride = 0
+    const offset = 0
+    context.vertexAttribPointer(index, attrib.size, type, normalized, stride, offset)
+    context.enableVertexAttribArray(index)
   }
 
-  gl.bindVertexArray(null)
+  context.bindVertexArray(null)
 
   return vao
 }

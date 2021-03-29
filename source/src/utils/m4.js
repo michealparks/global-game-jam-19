@@ -1,6 +1,6 @@
 const EPSILON = 0.000001
 
-export function m4_identity () {
+const identity = () => {
   const m = new Float32Array(16)
 
   m[0] = m[5] = m[10] = m[15] = 1.0
@@ -8,14 +8,14 @@ export function m4_identity () {
   return m
 }
 
-export function m4_identityFrom (m) {
+const identityFrom = (m) => {
   m[0] = m[5] = m[10] = m[15] = 1.0
   m[1] = m[2] = m[3] = m[4] = m[6] = m[7] = m[8] = m[9] = m[11] = m[12] = m[13] = m[14] = 0.0
 
   return m
 }
 
-export function m4_copy (a) {
+const copy = (a) => {
   const m = new Float32Array(16)
 
   m[0] = a[0]; m[1] = a[1]; m[2] = a[2]; m[3] = a[3]
@@ -26,7 +26,7 @@ export function m4_copy (a) {
   return m
 }
 
-export function m4_multiply (a, b, m) {
+const multiply = (a, b, m) => {
   const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3]
   const a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7]
   const a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11]
@@ -62,14 +62,14 @@ export function m4_multiply (a, b, m) {
   return m
 }
 
-export function m4_translate (m, x, y, z) {
+const translate = (m, x, y, z) => {
   m[12] = m[0] * x + m[4] * y + m[8] * z + m[12]
   m[13] = m[1] * x + m[5] * y + m[9] * z + m[13]
   m[14] = m[2] * x + m[6] * y + m[10] * z + m[14]
   m[15] = m[3] * x + m[7] * y + m[11] * z + m[15]
 }
 
-export function m4_rotate (m, a, inx, iny, inz) {
+const rotate = (m, a, inx, iny, inz) => {
   let l = Math.sqrt(inx * inx + iny * iny + inz * inz)
 
   if (l < EPSILON) {
@@ -109,13 +109,13 @@ export function m4_rotate (m, a, inx, iny, inz) {
   m[11] = a03 * b20 + a13 * b21 + a23 * b22
 }
 
-export function m4_scale (m, x, y, z) {
+const scale = (m, x, y, z) => {
   m[0] *= x; m[1] *= x; m[2] *= x; m[3] *= x
   m[4] *= y; m[5] *= y; m[6] *= y; m[7] *= y
   m[8] *= z; m[9] *= z; m[10] *= z; m[11] *= z
 }
 
-export function m4_inverse (a, m) {
+const inverse = (a, m) => {
   const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3]
   const a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7]
   const a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11]
@@ -164,7 +164,7 @@ export function m4_inverse (a, m) {
   return m
 }
 
-export function m4_transpose (m) {
+const transpose = (m) => {
   const a01 = a[1], a02 = a[2], a03 = a[3]
   const a12 = a[6], a13 = a[7]
   const a23 = a[11]
@@ -183,7 +183,7 @@ export function m4_transpose (m) {
   m[14] = a23
 }
 
-export function m4_perspective (fovy, aspect, near, far) {
+const perspective = (fovy, aspect, near, far) => {
   const m = new Float32Array(16)
   const f = 1.0 / Math.tan(fovy / 2)
   const nf = 1.0 / (near - far)
@@ -197,3 +197,15 @@ export function m4_perspective (fovy, aspect, near, far) {
   return m
 }
 
+export const m4 = {
+  identity,
+  identityFrom,
+  copy,
+  multiply,
+  translate,
+  rotate,
+  scale,
+  inverse,
+  transpose,
+  perspective
+}

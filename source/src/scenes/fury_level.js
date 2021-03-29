@@ -8,7 +8,7 @@ const inc = 0.0025
 let furylevel = 1.0
 let isActive = false
 
-export function furyLevel_update (punches) {
+export const update = (punches) => {
   if (!isActive) return 1.0
 
   let mult = punches === 0
@@ -39,7 +39,7 @@ export function furyLevel_update (punches) {
   return furylevel
 }
 
-export function furyLevel_show (toShow) {
+export const show = (toShow) => {
   isActive = toShow
 
   if (toShow) {
@@ -51,4 +51,9 @@ export function furyLevel_show (toShow) {
     furylevelContainer.classList.add('animating')
     furylevelContainer.classList.remove('shown')
   }
+}
+
+export const furyMeter = {
+  update,
+  show 
 }

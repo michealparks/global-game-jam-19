@@ -1,1 +1,1677 @@
-!function(e){var t={};function n(i){if(t[i])return t[i].exports;var r=t[i]={i:i,l:!1,exports:{}};return e[i].call(r.exports,r,r.exports,n),r.l=!0,r.exports}n.m=e,n.c=t,n.d=function(e,t,i){n.o(e,t)||Object.defineProperty(e,t,{enumerable:!0,get:i})},n.r=function(e){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},n.t=function(e,t){if(1&t&&(e=n(e)),8&t)return e;if(4&t&&"object"==typeof e&&e&&e.__esModule)return e;var i=Object.create(null);if(n.r(i),Object.defineProperty(i,"default",{enumerable:!0,value:e}),2&t&&"string"!=typeof e)for(var r in e)n.d(i,r,function(t){return e[t]}.bind(null,r));return i},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,"a",t),t},n.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},n.p="",n(n.s="./src/index.js")}({"./src/index.js":function(e,t,n){"use strict";n.r(t);const i=document.getElementById("canvas"),r=i.getContext("webgl",{antialias:!0,powerPreference:"high-performance"}),o={vertex:"precision highp float;\r\n\r\nattribute vec4 aVertexPosition;\r\nattribute mediump vec2 aTexturePosition;\r\n\r\nuniform mat4 uMatrix;\r\n\r\nvarying mediump vec2 texCoord;\r\n\r\nvoid main() {\r\n  texCoord = aTexturePosition;\r\n  gl_Position = uMatrix * aVertexPosition;\r\n}\r\n",frag:"precision mediump float;\r\n\r\nuniform sampler2D uSampler;\r\nuniform lowp float uAlpha;\r\n\r\nvarying vec2 texCoord;\r\n\r\nvoid main() {\r\n  vec4 result = texture2D(uSampler, texCoord);\r\n\r\n  if (result.a < 0.1) {\r\n    discard;\r\n  }\r\n\r\n  gl_FragColor = result;\r\n}\r\n"};{const e=r.getExtension("OES_vertex_array_object");r.createVertexArray=function(){return e.createVertexArrayOES()},r.bindVertexArray=function(t){return e.bindVertexArrayOES(t)}}const a=1e-6;function s(){const e=new Float32Array(16);return e[0]=e[5]=e[10]=e[15]=1,e}function c(e){return e[0]=e[5]=e[10]=e[15]=1,e[1]=e[2]=e[3]=e[4]=e[6]=e[7]=e[8]=e[9]=e[11]=e[12]=e[13]=e[14]=0,e}function u(e,t,n){const i=e[0],r=e[1],o=e[2],a=e[3],s=e[4],c=e[5],u=e[6],d=e[7],l=e[8],f=e[9],h=e[10],m=e[11],p=e[12],E=e[13],g=e[14],x=e[15];let T=0,v=0,y=0,A=0;return T=t[0],v=t[1],y=t[2],A=t[3],n[0]=T*i+v*s+y*l+A*p,n[1]=T*r+v*c+y*f+A*E,n[2]=T*o+v*u+y*h+A*g,n[3]=T*a+v*d+y*m+A*x,T=t[4],v=t[5],y=t[6],A=t[7],n[4]=T*i+v*s+y*l+A*p,n[5]=T*r+v*c+y*f+A*E,n[6]=T*o+v*u+y*h+A*g,n[7]=T*a+v*d+y*m+A*x,T=t[8],v=t[9],y=t[10],A=t[11],n[8]=T*i+v*s+y*l+A*p,n[9]=T*r+v*c+y*f+A*E,n[10]=T*o+v*u+y*h+A*g,n[11]=T*a+v*d+y*m+A*x,T=t[12],v=t[13],y=t[14],A=t[15],n[12]=T*i+v*s+y*l+A*p,n[13]=T*r+v*c+y*f+A*E,n[14]=T*o+v*u+y*h+A*g,n[15]=T*a+v*d+y*m+A*x,n}function d(e,t,n,i){e[12]=e[0]*t+e[4]*n+e[8]*i+e[12],e[13]=e[1]*t+e[5]*n+e[9]*i+e[13],e[14]=e[2]*t+e[6]*n+e[10]*i+e[14],e[15]=e[3]*t+e[7]*n+e[11]*i+e[15]}function l(e,t,n,i,r){let o=Math.sqrt(n*n+i*i+r*r);if(o<a)throw new Error("m4_rotate(): matrix length is zero");const s=n*(o=1/o),c=i*o,u=r*o,d=Math.sin(t),l=Math.cos(t),f=1-l,h=e[0],m=e[1],p=e[2],E=e[3],g=e[4],x=e[5],T=e[6],v=e[7],y=e[8],A=e[9],w=e[10],S=e[11],_=s*s*f+l,R=c*s*f+u*d,O=u*s*f-c*d,b=s*c*f-u*d,L=c*c*f+l,I=u*c*f+s*d,U=s*u*f+c*d,M=c*u*f-s*d,D=u*u*f+l;e[0]=h*_+g*R+y*O,e[1]=m*_+x*R+A*O,e[2]=p*_+T*R+w*O,e[3]=E*_+v*R+S*O,e[4]=h*b+g*L+y*I,e[5]=m*b+x*L+A*I,e[6]=p*b+T*L+w*I,e[7]=E*b+v*L+S*I,e[8]=h*U+g*M+y*D,e[9]=m*U+x*M+A*D,e[10]=p*U+T*M+w*D,e[11]=E*U+v*M+S*D}function f(){const e=r.canvas,t=window.devicePixelRatio,n=e.clientWidth*t|0,i=e.clientHeight*t|0;e.width===n&&e.height===i||(e.width=n,e.height=i,g=e.clientWidth/e.clientHeight,E=function(e,t,n,i){const r=new Float32Array(16),o=1/Math.tan(e/2),a=1/(n-i);return r[0]=o/t,r[5]=o,r[10]=(i+n)*a,r[11]=-1,r[14]=2*i*n*a,r}(h,g,m,p),r.viewport(0,0,e.width,e.height))}const h=30*Math.PI/180;const m=10,p=5e3;let E,g=0;function x(e,t){const n=r.createShader(e);if(r.shaderSource(n,t),r.compileShader(n),r.getShaderParameter(n,r.COMPILE_STATUS))return n;console.error("Error compiling shader: ",r.getShaderInfoLog(n)),r.deleteShader(n)}i.addEventListener("webglcontextlost",function(e){e.preventDefault()},!1),i.addEventListener("webglcontextrestored",function(e){},!1),f(),addEventListener("resize",f,{passive:!0}),r.clearColor(0,0,0,0),r.clearDepth(1),r.enable(r.DEPTH_TEST),r.depthFunc(r.LEQUAL),r.depthMask(!0),r.enable(r.BLEND),r.blendFunc(r.SRC_ALPHA,r.ONE_MINUS_SRC_ALPHA),r.enable(r.CULL_FACE),r.cullFace(r.FRONT);const T=function(e,t,n,i){const o=r.createProgram();if(r.attachShader(o,e),r.attachShader(o,t),void 0!==n)for(let e=0;e<n.length;e++)r.bindAttribLocation(o,void 0!==i?i[e]:e,n[e]);if(r.linkProgram(o),r.getProgramParameter(o,r.LINK_STATUS))return o;r.deleteProgram(o)}(x(r.VERTEX_SHADER,o.vertex),x(r.FRAGMENT_SHADER,o.frag)),v={uMatrix:r.getUniformLocation(T,"uMatrix"),uAlpha:r.getUniformLocation(T,"uAlpha"),uSampler:r.getUniformLocation(T,"uSampler")};function y(e,t,n){const i=r.createVertexArray();r.bindVertexArray(i),r.bindBuffer(r.ELEMENT_ARRAY_BUFFER,r.createBuffer()),r.bufferData(r.ELEMENT_ARRAY_BUFFER,t,r.STATIC_DRAW);for(let e,t,i=0,o=n.length;i<o;i++)e=n[i],t=r.getAttribLocation(T,e.name),r.bindBuffer(r.ARRAY_BUFFER,r.createBuffer()),r.bufferData(r.ARRAY_BUFFER,e.data,r.STATIC_DRAW),r.vertexAttribPointer(t,e.size,r.FLOAT,!1,0,0),r.enableVertexAttribArray(t);return r.bindVertexArray(null),i}let A=s(),w=s(),S=100,_=0,R=800,O=0,b=!1,L=1e-5,I=0,U=0,M=0,D=0;function H(e,t){L=e,I=t}function N(e){var t;U+=.01,b&&(S+=(_-S)*(t=O/R,1+--t*t*t*t*t),(O+=1)===R-1&&(b=!1)),D+=Math.sin(U*I)*L,M+=Math.sin(U*I)*L,c(A),l(A,-M,1,0,0),l(A,-D,0,1,0),d(A,-e,-24,-2*S),u(E,A,w)}function P(e){const t=e.matrix,n=e.translation,i=e.rotation,r=e.scale;c(e.matrix),d(t,n.x,n.y,n.z),0!==i.x&&l(t,i.x,1,0,0),0!==i.y&&l(t,i.y,0,1,0),0!==i.z&&l(t,i.z,0,0,1),function(e,t,n,i){e[0]*=t,e[1]*=t,e[2]*=t,e[3]*=t,e[4]*=n,e[5]*=n,e[6]*=n,e[7]*=n,e[8]*=i,e[9]*=i,e[10]*=i,e[11]*=i}(t,r.x,r.y,r.z)}function F(e){const t=e.translation,n=e.velocity;t.x+=n.x,t.y+=n.y,t.z+=n.z;const i=e.rotation,r=e.angularVelocity;i.x+=r.x,i.y+=r.y,i.z+=r.z;const o=e.scale,a=e.scaleVelocity;o.x+=a.x,o.y+=a.y,o.z+=a.z}let B=-1;const C=[],V=[],z=new Uint8Array([0,0,0,0]);function G(e){const t=e.target;if(!Y(t.width)||!Y(t.height))throw new Error(`${t.src} is not power of 2`);const n=+t.id;r.activeTexture(r.TEXTURE0+n),r.bindTexture(r.TEXTURE_2D,V[n]),r.texImage2D(r.TEXTURE_2D,0,r.RGBA,r.RGBA,r.UNSIGNED_BYTE,t),r.texParameteri(r.TEXTURE_2D,r.TEXTURE_MAG_FILTER,r.NEAREST),r.texParameteri(r.TEXTURE_2D,r.TEXTURE_MIN_FILTER,r.NEAREST),r.generateMipmap(r.TEXTURE_2D)}function Y(e){return 0==(e&e-1)}function W(e){0}function k(e){const t=C.indexOf(e);if(t>-1)return t;const n=V.length,i=r.createTexture();r.activeTexture(r.TEXTURE0+n),r.bindTexture(r.TEXTURE_2D,i),V.push(i),r.texImage2D(r.TEXTURE_2D,0,r.RGBA,1,1,0,r.RGBA,r.UNSIGNED_BYTE,z);const o=new Image;return o.id=n,o.onload=G,o.onerror=W,o.src=e,C.push(e),n}const X=new Float32Array([-1,1,1,1,-1,-1,1,-1]),j=new Uint16Array([3,2,0,3,0,1]);function $(e,t,n,i=1,r,o){const a=t/2,c=n/2,u=new Float32Array(X),d=[];for(let e=0;e<u.length;e+=2)u[e+0]*=a,u[e+1]*=c;const l=o.width,f=o.height,h=o.frameWidth/l,m=o.frameHeight/f,p=l/o.frameWidth;for(let e=0,t=0,n=0;n<i;n++){e=n*h%p,t=(n/p|0)*m;const i=new Float32Array([e+0+.001,t+0+.001,e+h-.001,t+0+.001,e+0+.001,t+m-.001,e+h-.001,t+m-.001]);d.push(y(0,j,[{name:"aVertexPosition",data:u,size:2},{name:"aTexturePosition",data:i,size:2}]))}const E={...{id:++B,static:!0,physics:!1,collision:!1,box:{w:0,d:0,h:0},translation:{x:0,y:0,z:0},rotation:{x:0,y:0,z:0},scale:{x:1,y:1,z:1},velocity:{x:0,y:0,z:0},angularVelocity:{x:0,y:0,z:0},scaleVelocity:{x:0,y:0,z:0},matrix:s()},animations:r,sprite:!0,animating:!1,currentAnimation:void 0!==r?r.idle:void 0,vaos:d,vao:d[0],numIndices:j.length,textureId:k(`./sprites/sheets/${e}.png`),step:0,lastStepTime:0};return E.box.w=t,E.box.h=n,E.box.d=1,E.translation.y=c,P(E),E}function K(e,t){e.currentAnimation=e.animations[t],e.step=e.currentAnimation.start,e.vao=e.vaos[e.step]}function J(e,t){const n=e.currentAnimation;if(void 0!==n&&(e.lastStepTime+=t,!(e.lastStepTime<=n.speed||e.step===n.start&&!1===e.animating))){if(e.lastStepTime=0,!1===e.animating||e.step===n.end){if("forwards"===n.fillMode)return;e.step=n.start}else e.step+=1;e.vao=e.vaos[e.step]}}const q=1,Q=2,Z=3,ee=4,te=5,ne=6,ie=7,re=8,oe=9,ae=10;document.querySelector("#input");const se=0,ce=1,ue=2,de=3,le=4,fe=5,he=6,me=7,pe=2,Ee=new Map;let ge,xe;Ee.set(1285,-1),Ee.set(142,le),Ee.set(-142,fe),Ee.set(-428,he),Ee.set(-714,me),Ee.set(428,de),Ee.set(-1e3,se),Ee.set(1e3,ce),Ee.set(714,ue);const Te=[q,Q,Z,ee];const ve=[],ye={87:q,83:ee,65:Q,68:Z,38:re,40:oe,37:ne,39:ie,16:te,32:ae};window.addEventListener("keydown",function(e){const t=ye[e.keyCode];void 0!==t&&ve.push(t)},{passive:!0}),window.addEventListener("keyup",function(e){const t=ye[e.keyCode];void 0!==t&&ve.splice(ve.indexOf(t),1)},{passive:!0});let Ae=-1,we=-1,Se=-1,_e=-1,Re=-1,Oe=-1,be=-1;function Le(){for(Ae=we=Re=Oe=Se=_e=-1;ve.length>0;)ve.pop()}be=setInterval(function(){if(Se===Re&&_e===Oe)for(Ae=Se,we=_e;ve.length>0;)ve.pop();const e=Re-Ae,t=Oe-we;if(Math.abs(e)>Math.abs(t))if(e>0){if(ve.indexOf(ie)>-1)return;ve.push(ie)}else{if(ve.indexOf(ne)>-1)return;ve.push(ne)}else if(t>0){if(ve.indexOf(re)>-1)return;ve.push(re)}else{if(ve.indexOf(oe)>-1)return;ve.push(oe)}console.log(ve.map(function(e){return ne?"punch left":ie?"punch right":re?"punch up":oe?"punch down":void 0}))},25),window.addEventListener("touchstart",function(e){const t=e.touches[0];Ae=Re=t.pageX,we=Oe=t.pageY},{passive:!0}),window.addEventListener("touchmove",function(e){const t=e.touches[0];Se=Re,_e=Oe,Re=t.pageX,Oe=t.pageY},{passive:!0}),window.addEventListener("touchend",Le,{passive:!0}),window.addEventListener("touchcancel",Le,{passive:!0});const Ie=0,Ue=1;let Me=-1,De=-1;function He(e){const t=navigator.getGamepads();De===Ie?function(e,t){for(;t.length>0;)t.pop();for(let t,n=0,i=e.length;n<i;n++)null!==(t=e[n])&&(-1!==t.id.indexOf("Joy-Con (L)")?ge=t:-1!==t.id.indexOf("Joy-Con (R)")&&(xe=t));const n=Ee.get(1e3*ge.axes[9]|0),i=[xe,ge];for(let e,n=0;n<i.length;n++)if(void 0!==(e=i[n]))for(let i,r=0;r<e.buttons.length;r++)if(e.buttons[r].pressed)switch(i=15*n+r+n){case pe:t.push(te)}switch(n){case se:t.push(Z);break;case ce:t.push(q,Z);break;case ue:t.push(q);break;case de:t.push(q,Q);break;case le:t.push(Q);break;case fe:t.push(ee,Q);break;case he:t.push(ee);break;case me:t.push(ee,Z)}}(t,ve):De===Ue&&function(e,t){const[n,i,r,o]=e[0].axes;for(let e,n=0,i=Te.length;n<i;n++)-1!==(e=t.indexOf(Te[n]))&&t.splice(e,1);n>.15?t.push(Z):n<-.15&&t.push(Q),i>.15?t.push(ee):i<-.15&&t.push(q)}(t,ve)}window.addEventListener("gamepadconnected",function(e){if(-1!==Me)return;const t=e.gamepad.id;t.indexOf("Joy-Con")>-1?De=Ie:t.indexOf("Xbox")>-1&&(De=Ue),Me=setInterval(He,1e3/30)},{passive:!0}),window.addEventListener("gamepaddisconnected",function(e){for(;ve.length>0;)ve.pop();clearInterval(Me),Me=-1},{passive:!0});const Ne=1.6,Pe=3,Fe=300,Be={...$("dad",32,32,20,{idle_right:{start:0,end:0,speed:2e3},idle_left:{start:1,end:1,speed:2e3},run_left:{start:2,end:8,speed:80},run_right:{start:9,end:15,speed:80},punch_right:{start:16,end:17,speed:Fe},punch_left:{start:18,end:19,speed:Fe}},{width:256,height:128,frameWidth:32,frameHeight:32}),speed:Ne,static:!1,physics:!0,animating:!0,punching:!1,control:!0,direction:1};Be.translation.z=.6;let Ce=0,Ve=0,ze=0,Ge=0;function Ye(e,t){console.log(e,t),e>0?(K(Be,"run_right"),Be.direction=1):e<0?(K(Be,"run_left"),Be.direction=-1):t>0?(K(Be,"idle_right"),Be.direction=1):t<0&&(K(Be,"idle_left"),Be.direction=-1)}window.addEventListener("blur",function(){Be.velocity.x=0},{passive:!0});const We=document.getElementById("inspiration"),ke=document.getElementById("bottomtext"),Xe=["HOME IS WHERE YOUR FIST IS.","YOU'VE NEVER FELT SO ALIVE.","HOME IS THE NICEST WORD THERE IS.","YOU WONDER WHAT'S FOR DINNER.","FOLLOW YOUR BLISS.","WE ARE WHO WE ARE.","HOME IS NOT A PLACE. IT'S A FEELING.","JUST GO WITH THE FLOW.","IT'S PAST THEIR BEDTIME.","THERE'S NO PLACE LIKE HOME.","AGE IS JUST A NUMBER.","WE'LL ALL BE LAUGHING ABOUT THIS SOON.","DON'T FORGET TO PAY THE MORTGAGE.","THINGS COULD BE WORSE.","TAKE LEMONS AND MAKE LEMONADE.","YOU'LL REGRET THE THINGS YOU DIDN'T DO.","THE AZALEAS NEED TO BE WATERED.","WORK HARD, PLAY HARD.","GOTTA FIX THAT CREAKY FLOORBOARD.","SOMETIMES YOU JUST GOTTA EAT THE HAM SANDWICH.","REX IS DUE FOR A CHECKUP."],je=[],$e=Xe.length;let Ke=-1,Je=-1;function qe(){for(let e=0,t=$e;e<t;e++)je.push(e);!function(e){for(let t,n,i=e.length-1;i>0;--i)t=Math.floor(Math.random()*(i+1)),n=e[i],e[i]=e[t],e[t]=n}(je)}function Qe(){0===je.length&&qe(),We.innerText=Xe[je.pop()],Je=setTimeout(function(){We.innerText=""},7e3)}function Ze(e,t){We.innerText=e||"",ke.innerText=t||""}const et=document.getElementById("furylevel-container"),tt=document.getElementById("furylevel").style,nt=et.style,it=.0011,rt=.0025;let ot=1,at=!1;function st(e){at=e,e?(et.classList.add("animating","shown"),setTimeout(function(){et.classList.remove("animating")},400)):(et.classList.add("animating"),et.classList.remove("shown"))}const ct=[],ut={};let dt;function lt(e,t,n){e.source=dt.createBufferSource(),e.source.buffer=e.buffer,e.source.loop=t||!1,e.source.connect(e.gainNode),e.gainNode.gain.value=n,e.source.start(1)}function ft(e){return e.arrayBuffer()}function ht(e,t){fetch(t).then(ft).then(function(t){dt.decodeAudioData(t,function(t){ct[e]=function(e){const t=dt.createGain();return t.connect(dt.destination),{source:void 0,buffer:e,gainNode:t}}(t),void 0!==ut[e]&&(lt(ct[e],ut[e].loop,ut[e].vol),delete ut[e])})})}function mt(e,t,n){void 0!==ct[e]?lt(ct[e],t,n):ut[e]={loop:t,vol:n}}function pt(e,t,n){const i=ct[e];void 0!==i&&void 0!==i.source&&i.source.stop(0)}let Et=0,gt=.1;const xt=1.8,Tt=144,vt=.8,yt=!1,At=[{name:"tall_punk",frames:6},{name:"beer_bong",frames:6},{name:"yoga_gal",frames:6},{name:"slice",frames:6},{name:"hover_bro",frames:6}],wt=[{name:"bg_bookshelf",frames:2},{name:"bg_couch",frames:1},{name:"bg_lamp",frames:2},{name:"bg_plant",frames:1},{name:"bg_wallpaper",frames:1}],St=[Be],_t=[];let Rt,Ot=!1,bt=0,Lt=0,It=0,Ut=!1,Mt=!1,Dt=!1,Ht=!1;function Nt(e){const t=St.indexOf(e);t>-1&&St.splice(t,1)}function Pt(e){const t=Math.random()*wt.length-1|0,n=Math.random()*wt.length-1|0,i=Math.random()*wt.length-1|0,r=Bt(wt[t],Et),o=Bt(wt[n],Et+48),a=Bt(wt[i],Et+48+48);if(Et+=Tt,St.push(r,o,a),e){const e=Vt(At[0],Tt/2);_t.push(e),St.push(e)}for(let e,t=0;t<At.length;t++){e=32+Math.random()*(Tt-32)+Et;const n=Vt(At[t],e);_t.push(n),St.push(n)}}function Ft(e,t,n,i,r){const o={...$(e,t,n,1,void 0,r),static:!0};return o.translation.x=t/2+i,o.translation.z=-.1,P(o),o}function Bt(e,t){const n={...$(e.name,48,48,e.frames,{idle:{start:0,end:e.frames-1,speed:200}},{width:64*e.frames,height:64,frameWidth:48,frameHeight:48}),static:frames>1};return n.translation.x=24+t,P(n),n}function Ct(e){e.animating=!0}function Vt(e,t){const n={...$(e.name,32,32,e.frames,{idle:{start:0,end:1,speed:400},fly:{start:2,end:2,speed:400}},{width:128,height:64,frameWidth:32,frameHeight:32}),dead:!1,timeDead:0,static:!1};return setTimeout(Ct,3e3*Math.random(),n),n.translation.z=(.5===gt?gt=.1:gt+=.1,gt),n.translation.x=t||0,P(n),n}function zt(e,t){setTimeout(Gt,1e3*e,t)}function Gt(e){void 0!==e.text&&(Ze(e.text,e.text2),void 0!==e.dur&&setTimeout(Yt,1e3*e.dur)),void 0!==e.control&&(Be.control=e.control),void 0!==e.fn&&e.fn()}function Yt(){Ze("")}function Wt(e=vt){mt(`hit_${5*Math.random()|0}`,!1,e)}function kt(){Ze(""),mt("party",!0,vt),Be.control=!0,Be.velocity.x=1.6,K(Be,"run_right"),Dt=!0}function Xt(){st(!0),zt(4,{dur:3,text:"MAINTAIN YOUR PARENTAL FURY."}),zt(8,{fn:function(){Ke=setInterval(Qe,1e4)}})}function jt(){pt("party"),mt("fail",!0,vt),r.canvas.classList.add("game-over"),Be.velocity.x=0,K(Be,"idle_right"),clearTimeout(Ke),clearTimeout(Je),We.innerText="",st(!1),R=1500||800,_=180,O=0,b=!0,H(0,0),zt(2,{text:`YOU VANQUISHED ${It} PARTYGOERS`}),zt(4,{text:`YOU VANQUISHED ${It} PARTYGOERS`,text2:"BEFORE YOU LOST YOUR PASSION"}),zt(4,{fn:function(){function e(){location.reload(!1)}document.addEventListener("touchstart",e),document.addEventListener("keydown",e),document.addEventListener("click",e)}})}function $t(e){const{x:t}=Be.translation;if(N(t+20),!Ut&&(function(e){if(Ge+=e,!((ze+=e)<40)&&(ze=0,Ce=0,!1!==Be.control)){ve.indexOf(te)>-1?Be.speed=Pe:Be.speed=Ne;for(let e=0,t=ve.length;e<t;e++)switch(ve[e]){case Q:Ce=-Be.speed;break;case Z:Ce=Be.speed}for(let e=0,t=ve.length;e<t;e++)switch(ve[e]){case ae:if(Be.punching)break;return Be.punching=!0,void K(Be,Be.direction>0?"punch_right":"punch_left")}Be.punching&&Ge>Fe&&(Be.punching=!1,Ye(Be.velocity.x,Ve)),Ve!==Ce&&(Ye(Ce,Ve),Be.velocity.x=Ce),Ve=Ce}}(e),!Mt&&t>Et&&(pt("intro"),mt("crowd",!0,vt-.4<0?0:vt-.4),Ze(""),window.nightsky.style.display="none",Nt(Rt),Pt(!0),Pt(),setTimeout(function(){Be.velocity.x=0,K(Be,"idle_right")},200),Be.control=!1,Mt=!0,zt(2.5,{dur:2.5,text:'"Sup bro?"'}),zt(6,{dur:2.5,text:"..."}),zt(9,{dur:2.5,text:'"Aren\'t you a little old for this party?"'}),zt(12,{text:"PUNCH.",fn:Wt}),zt(12.5,{text:"PUNCH. THIS.",fn:Wt}),zt(13,{text:"PUNCH. THIS. GUY.",fn:Wt}),zt(13.5,{dur:.5,text:"PUNCH. THIS. GUY. [spacebar]",fn:Wt}),setTimeout(kt,14e3)),Dt)){Lt=0,t+window.innerWidth>Et&&Pt();for(let t,n=0,i=_t.length;n<i;n++)void 0!==(t=_t[n])&&t.dead&&(t.timeDead+=e,t.timeDead>2e3&&(_t.splice(n,1),Nt(t)));if(Be.punching){Lt=1,Ot||(H(.001,100),Ot=!0);const e=Be.velocity.x>0?xt:-xt;for(let n,i=0,r=_t.length;i<r;i++)(n=_t[i]).dead||Math.abs(t-n.translation.x)<10&&(K(n,"fly"),n.velocity.x=2*e,1===bt?(n.velocity.y=.4,n.angularVelocity.z=.25):2==bt?(n.velocity.y=1,n.angularVelocity.z=.4,n.scaleVelocity.x=n.scaleVelocity.y=n.scaleVelocity.z=.01):3===bt&&(n.velocity.x=3*e,n.velocity.y=1.5,n.angularVelocity.z=.6,n.scaleVelocity.x=n.scaleVelocity.y=n.scaleVelocity.z=.09),Ht||(Ht=!0,Xt()),n.dead=!0,n.physics=!0,It++,1===++bt&&mt(`hit_${5*Math.random|0}`,!1,vt))}else Ot&&(H(1e-5,0),Ot=!1),bt=0;1===Lt&&0===bt&&(bt=-1),function(e){if(!at)return 1;ot-=-1===e?10*it:it,(ot+=rt*(0===e?0:2===e?3:3===e?6:e>=4?9:1))>1&&(ot=1),Math.random(),Math.random();const t=10*(1-ot)*Math.random(),n=10*(1-ot)*Math.random();return nt.transform=`translate(${t}px, ${n}px)`,tt.transform=`scale(${ot}, 1)`,ot}(bt)<=0&&(Ut=!0,jt())}}let Kt,Jt=0,qt=performance.now(),Qt=-1,Zt=!0,en=s(),tn=0,nn=0;function rn(e){r.clear(r.COLOR_BUFFER_BIT|r.DEPTH_BUFFER_BIT),Jt=e-qt,qt=e,$t(Jt),function(e){for(tn=0,nn=e.length;tn<nn;tn++)!1===(Kt=e[tn]).static&&(P(Kt),!0===Kt.physics&&F(Kt),J(Kt,Jt)),u(w,Kt.matrix,en),t=Kt.textureId,n=v.uSampler,r.activeTexture(r.TEXTURE0+t),r.bindTexture(r.TEXTURE_2D,V[t]),r.uniform1i(n,t),r.bindVertexArray(Kt.vao),r.uniformMatrix4fv(v.uMatrix,!1,en),r.drawElements(r.TRIANGLES,Kt.numIndices,r.UNSIGNED_SHORT,0);var t,n}(St),Qt=window.requestAnimationFrame(rn)}function on(){Zt=!1,Qt=window.requestAnimationFrame(rn)}r.useProgram(T),r.uniform1f(v.uAlpha,1),document.addEventListener("touchstart",function e(){const t=window.AudioContext||window.webkitAudioContext;n=new t,dt=n;var n;ht("intro","./music/intro.mp3");ht("party","./music/party_1.mp3");ht("fail","./music/fail.mp3");ht("hit_0","./music/hit_1.wav");ht("hit_1","./music/hit_2.wav");ht("hit_2","./music/hit_3.wav");ht("hit_3","./music/hit_4.wav");ht("hit_4","./music/hit_5.wav");ht("coin","./music/coin.wav");ht("crowd","./music/crowd.wav");document.removeEventListener("touchstart",e)}),on(),Be.control=yt,Be.translation.x=-80,mt("intro",!0,vt),St.push(Ft("car",96,48,-180,{width:64,height:32,frameWidth:64,frameHeight:32})),Rt=Ft("home",128,128,-20,{width:64,height:64,frameWidth:64,frameHeight:64}),St.push(Rt),zt(3,{dur:3,text:'"I\'m glad I cancelled that trip to Milwaukee."'}),zt(7.5,{dur:3,text:'"...and didn\'t tell the kids."'}),zt(12,{dur:3,text:'"They\'ll be so delighted and surprised."'}),zt(16.5,{dur:3,text:"<- A D ->",control:!0,fn:function(){K(Be,"run_right"),Be.velocity.x=1.6}});let an=Zt;document.addEventListener("visibilitychange",function(){document.hidden?(an=Zt,Zt=!0,window.cancelAnimationFrame(Qt)):!1===an&&on()},{passive:!0,capture:!1})}});
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	// The require scope
+/******/ 	var __webpack_require__ = {};
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+/*!***********************************!*\
+  !*** ./src/index.js + 21 modules ***!
+  \***********************************/
+// ESM COMPAT FLAG
+__webpack_require__.r(__webpack_exports__);
+
+;// CONCATENATED MODULE: ./src/utils/m4.js
+const EPSILON = 0.000001
+
+const identity = () => {
+  const m = new Float32Array(16)
+
+  m[0] = m[5] = m[10] = m[15] = 1.0
+
+  return m
+}
+
+const identityFrom = (m) => {
+  m[0] = m[5] = m[10] = m[15] = 1.0
+  m[1] = m[2] = m[3] = m[4] = m[6] = m[7] = m[8] = m[9] = m[11] = m[12] = m[13] = m[14] = 0.0
+
+  return m
+}
+
+const copy = (a) => {
+  const m = new Float32Array(16)
+
+  m[0] = a[0]; m[1] = a[1]; m[2] = a[2]; m[3] = a[3]
+  m[4] = a[4]; m[5] = a[5]; m[6] = a[6]; m[7] = a[7]
+  m[8] = a[8]; m[9] = a[9]; m[10] = a[10]; m[11] = a[11]
+  m[12] = a[12]; m[13] = a[13]; m[14] = a[14]; m[15] = a[15]
+
+  return m
+}
+
+const multiply = (a, b, m) => {
+  const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3]
+  const a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7]
+  const a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11]
+  const a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15]
+
+  let b0 = 0.0, b1 = 0.0, b2 = 0.0, b3 = 0.0
+
+  // Cache only the current line of the second matrix
+  b0 = b[0]; b1 = b[1]; b2 = b[2]; b3 = b[3]
+  m[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30
+  m[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31
+  m[2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32
+  m[3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33
+
+  b0 = b[4]; b1 = b[5]; b2 = b[6]; b3 = b[7]
+  m[4] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30
+  m[5] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31
+  m[6] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32
+  m[7] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33
+
+  b0 = b[8]; b1 = b[9]; b2 = b[10]; b3 = b[11]
+  m[8] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30
+  m[9] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31
+  m[10] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32
+  m[11] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33
+
+  b0 = b[12]; b1 = b[13]; b2 = b[14]; b3 = b[15]
+  m[12] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30
+  m[13] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31
+  m[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32
+  m[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33
+
+  return m
+}
+
+const translate = (m, x, y, z) => {
+  m[12] = m[0] * x + m[4] * y + m[8] * z + m[12]
+  m[13] = m[1] * x + m[5] * y + m[9] * z + m[13]
+  m[14] = m[2] * x + m[6] * y + m[10] * z + m[14]
+  m[15] = m[3] * x + m[7] * y + m[11] * z + m[15]
+}
+
+const rotate = (m, a, inx, iny, inz) => {
+  let l = Math.sqrt(inx * inx + iny * iny + inz * inz)
+
+  if (l < EPSILON) {
+    throw new Error('m4_rotate(): matrix length is zero')
+  }
+
+  l = 1.0 / l
+  
+  const x = inx * l
+  const y = iny * l
+  const z = inz * l
+
+  const s = Math.sin(a)
+  const c = Math.cos(a)
+  const t = 1 - c
+
+  const a00 = m[0], a01 = m[1], a02 = m[2], a03 = m[3]
+  const a10 = m[4], a11 = m[5], a12 = m[6], a13 = m[7]
+  const a20 = m[8], a21 = m[9], a22 = m[10], a23 = m[11]
+
+  // construct the elements of the rotation matrix
+  const b00 = x * x * t + c,     b01 =  y * x * t + z * s, b02 = z * x * t - y * s
+  const b10 = x * y * t - z * s, b11 = y * y * t + c,      b12 = z * y * t + x * s
+  const b20 = x * z * t + y * s, b21 = y * z * t - x * s,  b22 = z * z * t + c
+
+  m[0] = a00 * b00 + a10 * b01 + a20 * b02
+  m[1] = a01 * b00 + a11 * b01 + a21 * b02
+  m[2] = a02 * b00 + a12 * b01 + a22 * b02
+  m[3] = a03 * b00 + a13 * b01 + a23 * b02
+  m[4] = a00 * b10 + a10 * b11 + a20 * b12
+  m[5] = a01 * b10 + a11 * b11 + a21 * b12
+  m[6] = a02 * b10 + a12 * b11 + a22 * b12
+  m[7] = a03 * b10 + a13 * b11 + a23 * b12
+  m[8] = a00 * b20 + a10 * b21 + a20 * b22
+  m[9] = a01 * b20 + a11 * b21 + a21 * b22
+  m[10] = a02 * b20 + a12 * b21 + a22 * b22
+  m[11] = a03 * b20 + a13 * b21 + a23 * b22
+}
+
+const scale = (m, x, y, z) => {
+  m[0] *= x; m[1] *= x; m[2] *= x; m[3] *= x
+  m[4] *= y; m[5] *= y; m[6] *= y; m[7] *= y
+  m[8] *= z; m[9] *= z; m[10] *= z; m[11] *= z
+}
+
+const inverse = (a, m) => {
+  const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3]
+  const a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7]
+  const a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11]
+  const a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15]
+
+  const b00 = a00 * a11 - a01 * a10;
+  const b01 = a00 * a12 - a02 * a10;
+  const b02 = a00 * a13 - a03 * a10;
+  const b03 = a01 * a12 - a02 * a11;
+  const b04 = a01 * a13 - a03 * a11;
+  const b05 = a02 * a13 - a03 * a12;
+  const b06 = a20 * a31 - a21 * a30;
+  const b07 = a20 * a32 - a22 * a30;
+  const b08 = a20 * a33 - a23 * a30;
+  const b09 = a21 * a32 - a22 * a31;
+  const b10 = a21 * a33 - a23 * a31;
+  const b11 = a22 * a33 - a23 * a32;
+
+  // Calculate the determinant
+  const det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+
+  if (!det) {
+    if (false) {}
+    return null
+  }
+  
+  const d = 1.0 / det
+
+  m[0] = (a11 * b11 - a12 * b10 + a13 * b09) * d
+  m[1] = (a02 * b10 - a01 * b11 - a03 * b09) * d
+  m[2] = (a31 * b05 - a32 * b04 + a33 * b03) * d
+  m[3] = (a22 * b04 - a21 * b05 - a23 * b03) * d
+  m[4] = (a12 * b08 - a10 * b11 - a13 * b07) * d
+  m[5] = (a00 * b11 - a02 * b08 + a03 * b07) * d
+  m[6] = (a32 * b02 - a30 * b05 - a33 * b01) * d
+  m[7] = (a20 * b05 - a22 * b02 + a23 * b01) * d
+  m[8] = (a10 * b10 - a11 * b08 + a13 * b06) * d
+  m[9] = (a01 * b08 - a00 * b10 - a03 * b06) * d
+  m[10] = (a30 * b04 - a31 * b02 + a33 * b00) * d
+  m[11] = (a21 * b02 - a20 * b04 - a23 * b00) * d
+  m[12] = (a11 * b07 - a10 * b09 - a12 * b06) * d
+  m[13] = (a00 * b09 - a01 * b07 + a02 * b06) * d
+  m[14] = (a31 * b01 - a30 * b03 - a32 * b00) * d
+  m[15] = (a20 * b03 - a21 * b01 + a22 * b00) * d
+
+  return m
+}
+
+const transpose = (m) => {
+  const a01 = a[1], a02 = a[2], a03 = a[3]
+  const a12 = a[6], a13 = a[7]
+  const a23 = a[11]
+
+  m[1] = a[4]
+  m[2] = a[8]
+  m[3] = a[12]
+  m[4] = a01
+  m[6] = a[9]
+  m[7] = a[13]
+  m[8] = a02
+  m[9] = a12
+  m[11] = a[14]
+  m[12] = a03
+  m[13] = a13
+  m[14] = a23
+}
+
+const perspective = (fovy, aspect, near, far) => {
+  const m = new Float32Array(16)
+  const f = 1.0 / Math.tan(fovy / 2)
+  const nf = 1.0 / (near - far)
+
+  m[0] = f / aspect
+  m[5] = f
+  m[10] = (far + near) * nf
+  m[11] = -1
+  m[14] = (2 * far * near) * nf
+
+  return m
+}
+
+const m4 = {
+  identity,
+  identityFrom,
+  copy,
+  multiply,
+  translate,
+  rotate,
+  scale,
+  inverse,
+  transpose,
+  perspective
+}
+;// CONCATENATED MODULE: ./src/utils/math.js
+function randInt (range) {
+  return Math.random() * range | 0
+}
+
+function degToRad (d) {
+  return d * Math.PI / 180
+}
+
+function clamp (n, min, max) {
+  return Math.min(max, Math.max(min, n))
+}
+
+function distance2d (x1, y1, x2, y2) {
+  return Math.sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1)))
+}
+
+function transformVector(m4, v) {
+  const dst = new Float32Array(4)
+
+  for (let i = 0, j; i < 4; ++i) {
+    dst[i] = 0.0
+    for (j = 0; j < 4; ++j) {
+      dst[i] += v[j] * m4[j * 4 + i]
+    }
+  }
+
+  return dst
+}
+
+;// CONCATENATED MODULE: ./src/shaders/gl2-vertex.glsl
+/* harmony default export */ const gl2_vertex = ("#version 300 es\r\n\r\nprecision highp float;\r\n\r\nin vec4 aVertexPosition;\r\nin mediump vec2 aTexturePosition;\r\n\r\nuniform mat4 uMatrix;\r\n\r\nout mediump vec2 texCoord;\r\n\r\nvoid main() {\r\n  texCoord = aTexturePosition;\r\n  gl_Position = uMatrix * aVertexPosition;\r\n}\r\n");
+;// CONCATENATED MODULE: ./src/shaders/gl2-frag.glsl
+/* harmony default export */ const gl2_frag = ("#version 300 es\r\n\r\nprecision mediump float;\r\n\r\nuniform sampler2D uSampler;\r\nuniform lowp float uAlpha;\r\n\r\nin vec2 texCoord;\r\n\r\nout lowp vec4 outColor;\r\n\r\nvoid main() {\r\n  vec4 result = texture(uSampler, texCoord);\r\n\r\n  if (result.a < 0.1f) {\r\n    discard;\r\n  }\r\n\r\n  outColor = result;\r\n}\r\n");
+;// CONCATENATED MODULE: ./src/shaders/gl1-vertex.glsl
+/* harmony default export */ const gl1_vertex = ("precision highp float;\r\n\r\nattribute vec4 aVertexPosition;\r\nattribute mediump vec2 aTexturePosition;\r\n\r\nuniform mat4 uMatrix;\r\n\r\nvarying mediump vec2 texCoord;\r\n\r\nvoid main() {\r\n  texCoord = aTexturePosition;\r\n  gl_Position = uMatrix * aVertexPosition;\r\n}\r\n");
+;// CONCATENATED MODULE: ./src/shaders/gl1-frag.glsl
+/* harmony default export */ const gl1_frag = ("precision mediump float;\r\n\r\nuniform sampler2D uSampler;\r\nuniform lowp float uAlpha;\r\n\r\nvarying vec2 texCoord;\r\n\r\nvoid main() {\r\n  vec4 result = texture2D(uSampler, texCoord);\r\n\r\n  if (result.a < 0.1) {\r\n    discard;\r\n  }\r\n\r\n  gl_FragColor = result;\r\n}\r\n");
+;// CONCATENATED MODULE: ./src/engine/gl.js
+
+
+
+
+
+
+
+const fov = degToRad(30.0)
+const zNear = 10.0
+const zFar = 5000.0
+const canvas = document.getElementById('canvas')
+const context = canvas.getContext( false ? 0 : 'webgl', {
+  antialias: true,
+  powerPreference: 'high-performance'
+})
+
+const shaders =  false
+  ? 0
+  : {vertex: gl1_vertex, frag: gl1_frag}
+
+if (true) {
+  const vaoExt = context.getExtension('OES_vertex_array_object')
+  context.createVertexArray = () => vaoExt.createVertexArrayOES()
+  context.bindVertexArray = (vao) => vaoExt.bindVertexArrayOES(vao)
+}
+
+const resizeCanvas = () => {
+  const realToCSSPixels = window.devicePixelRatio
+  const width = canvas.clientWidth * realToCSSPixels | 0
+  const height = canvas.clientHeight * realToCSSPixels | 0
+
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width
+    canvas.height = height
+    aspectRatio = canvas.clientWidth / canvas.clientHeight
+    projectionMatrix = m4.perspective(fov, aspectRatio, zNear, zFar)
+
+    // Tell WebGL how to convert from clip space to pixels
+    context.viewport(0, 0, canvas.width, canvas.height)
+  }
+}
+
+let projectionMatrix
+let aspectRatio = 0.0
+
+resizeCanvas()
+addEventListener('resize', resizeCanvas, { passive: true })
+
+context.clearColor(0.0, 0.0, 0.0, 0.0)
+context.clearDepth(1.0)
+
+// Turn on depth testing
+context.enable(context.DEPTH_TEST)
+
+context.depthFunc(context.LEQUAL)
+
+context.depthMask(true)
+
+context.enable(context.BLEND)
+
+context.blendFunc(context.SRC_ALPHA, context.ONE_MINUS_SRC_ALPHA)
+
+// Tell webgl to cull faces
+context.enable(context.CULL_FACE)
+
+context.cullFace(context.FRONT)
+
+let gl = {
+  canvas,
+  context,
+  shaders,
+  projectionMatrix,
+  aspectRatio
+}
+;// CONCATENATED MODULE: ./src/engine/programs.js
+
+
+const { context: programs_context } = gl
+
+const createShader = (type, source) => {
+  const shader = programs_context.createShader(type)
+  programs_context.shaderSource(shader, source)
+  programs_context.compileShader(shader)
+
+  if (programs_context.getShaderParameter(shader, programs_context.COMPILE_STATUS)) {
+    return shader
+  }
+
+  console.error('Error compiling shader: ', programs_context.getShaderInfoLog(shader))
+
+  programs_context.deleteShader(shader)
+}
+
+const createProgram = (vertex, fragment, attribs, locations) => {
+  const program = programs_context.createProgram()
+  programs_context.attachShader(program, vertex)
+  programs_context.attachShader(program, fragment)
+
+  if (attribs !== undefined) {
+    for (let i = 0; i < attribs.length; i++) {
+      programs_context.bindAttribLocation(program, locations !== undefined ? locations[i] : i, attribs[i])
+    }
+  }
+  
+  programs_context.linkProgram(program)
+  
+  if (programs_context.getProgramParameter(program, programs_context.LINK_STATUS)) {
+    return program
+  }
+
+  if (false) {}
+
+  programs_context.deleteProgram(program)
+}
+
+
+const program = createProgram(
+  createShader(programs_context.VERTEX_SHADER, gl.shaders.vertex),
+  createShader(programs_context.FRAGMENT_SHADER, gl.shaders.frag)
+)
+
+const programUniforms = {
+  uMatrix: programs_context.getUniformLocation(program, 'uMatrix'),
+  uAlpha: programs_context.getUniformLocation(program, 'uAlpha'),
+  uSampler: programs_context.getUniformLocation(program, 'uSampler'),
+}
+
+const initVao = (pName, indices, attribs) => {
+  const vao = programs_context.createVertexArray()
+  programs_context.bindVertexArray(vao)
+
+  programs_context.bindBuffer(programs_context.ELEMENT_ARRAY_BUFFER, programs_context.createBuffer())
+  programs_context.bufferData(programs_context.ELEMENT_ARRAY_BUFFER, indices, programs_context.STATIC_DRAW)
+
+  for (const attrib of attribs) {
+    const index = programs_context.getAttribLocation(program, attrib.name)
+    programs_context.bindBuffer(programs_context.ARRAY_BUFFER, programs_context.createBuffer())
+    programs_context.bufferData(programs_context.ARRAY_BUFFER, attrib.data, programs_context.STATIC_DRAW)
+
+    const type = programs_context.FLOAT
+    const normalized = false
+    const stride = 0
+    const offset = 0
+    programs_context.vertexAttribPointer(index, attrib.size, type, normalized, stride, offset)
+    programs_context.enableVertexAttribArray(index)
+  }
+
+  programs_context.bindVertexArray(null)
+
+  return vao
+}
+
+;// CONCATENATED MODULE: ./src/utils/easing.js
+// accelerating from zero velocity
+function easeInQuad (t) {
+  return t * t
+}
+
+// decelerating to zero velocity
+function easeOutQuad (t) {
+  return t * (2 - t)
+}
+
+// acceleration until halfway, then deceleration
+function  easeInOutQuad (t) {
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+}
+
+// accelerating from zero velocity
+function easeInCubic (t) {
+  return t * t * t
+}
+
+// decelerating to zero velocity
+function easeOutCubic (t) {
+  return (--t) * t * t + 1
+}
+
+// acceleration until halfway then deceleration
+function easeInOutCubic (t) {
+  return t < 0.5
+    ? 4 * t * t * t
+    : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1
+}
+
+// accelerating from zero velocity
+function easeInQuart (t) {
+  return t * t * t * t
+}
+
+// decelerating to zero velocity
+function easeOutQuart (t) {
+  return 1 - (--t) * t * t * t
+}
+
+// acceleration until halfway then deceleration
+function easeInOutQuart (t) {
+  return t < 0.5
+    ? 8 * t * t * t * t
+    : 1 - 8 * (--t) * t * t * t
+}
+
+// accelerating from zero velocity
+function easeInQuint (t) {
+  return t * t * t * t * t
+}
+
+// decelerating to zero velocity
+function easeOutQuint (t) {
+  return 1 + (--t) * t * t * t * t
+}
+
+// acceleration until halfway then deceleration
+function easeInOutQuint (t) {
+  return t < 0.5
+    ? 16 * t * t * t * t * t
+    : 1 + 16 * (--t) * t * t * t * t
+}
+
+// elastic bounce effect at the beginning
+function easeInElastic (t) {
+  return (0.04 - 0.04 / t) * Math.sin(25.0 * t) + 1.0
+}
+
+// elastic bounce effect at the end
+function easeOutElastic (t) {
+  return 0.04 * t / (--t) * Math.sin(25.0 * t)
+}
+
+// elastic bounce effect at the beginning and end
+function easeInOutElastic (t) {
+  return (t -= .5) < 0
+    ? (.02 + .01 / t) * Math.sin(50 * t)
+    : (.02 - .01 / t) * Math.sin(50 * t) + 1
+}
+;// CONCATENATED MODULE: ./src/engine/camera.js
+
+
+
+
+let cameraMatrix = m4.identity()
+let viewMatrix = m4.identity()
+
+let zoom = 100.0
+let nextZoom = 0.0
+let inc = 0.0
+let steps = 800
+let curStep = 0
+let zooming = false
+
+let shakeMagnitude = 0.00001
+let shakeSpeed = 0.0
+
+let delta = 0.0
+let cameraAngleY = 0.0
+let cameraAngleX = 0.0
+
+const setZoom = (n, s) => {
+  steps = s || 800
+  nextZoom = n
+  curStep = 0
+  zooming = true
+}
+
+const setShake = (magnitude, speed) => {
+  shakeMagnitude = magnitude
+  shakeSpeed = speed
+}
+
+function update (x) {
+  delta += 0.01
+
+  if (zooming) {
+    zoom += ((nextZoom - zoom) * easeOutQuint(curStep / steps))
+    curStep += 1
+
+    if (curStep === steps - 1) {
+      zooming = false
+    }
+  }
+
+  cameraAngleX += Math.sin(delta * shakeSpeed) * shakeMagnitude
+  cameraAngleY += Math.sin(delta * shakeSpeed) * shakeMagnitude
+
+  m4.identityFrom(cameraMatrix)
+  m4.rotate(cameraMatrix, -cameraAngleY, 1, 0, 0)
+  m4.rotate(cameraMatrix, -cameraAngleX, 0, 1, 0)
+  m4.translate(cameraMatrix, -x, -24, -(zoom * 2))
+  m4.multiply(gl.projectionMatrix, cameraMatrix, viewMatrix)
+}
+
+const camera = {
+  setZoom,
+  setShake,
+  update,
+  viewMatrix
+}
+;// CONCATENATED MODULE: ./src/objects/index.js
+
+
+const updateMatrix = (object) => {
+  const m = object.matrix
+  const t = object.translation
+  const r = object.rotation
+  const s = object.scale
+
+  m4.identityFrom(object.matrix)
+  m4.translate(m, t.x, t.y, t.z)
+
+  if (r.x !== 0.0) m4.rotate(m, r.x, 1, 0, 0)
+  if (r.y !== 0.0) m4.rotate(m, r.y, 0, 1, 0)
+  if (r.z !== 0.0) m4.rotate(m, r.z, 0, 0, 1)
+
+  m4.scale(m, s.x, s.y, s.z)
+}
+
+const updatePhysics = (object) => {
+  const t = object.translation, v = object.velocity
+  t.x += v.x
+  t.y += v.y
+  t.z += v.z
+
+  const r = object.rotation, av = object.angularVelocity
+  r.x += av.x
+  r.y += av.y
+  r.z += av.z
+
+  const s = object.scale, sv = object.scaleVelocity
+  s.x += sv.x
+  s.y += sv.y
+  s.z += sv.z
+}
+
+let id = -1
+
+const object = () => {
+  return {
+    id: ++id,
+    static: true,
+    physics: false,
+    collision: false,
+
+    box: {w: 0.0, d: 0.0, h: 0.0},
+    translation: {x: 0.0, y: 0.0, z: 0.0},
+    rotation: {x: 0.0, y: 0.0, z: 0.0},
+    scale: {x: 1.0, y: 1.0, z: 1.0},
+    velocity: {x: 0.0, y: 0.0, z: 0.0},
+    angularVelocity: {x: 0.0, y: 0.0, z: 0.0},
+    scaleVelocity: {x: 0.0, y: 0.0, z: 0.0},
+
+    matrix: m4.identity(),
+  }
+}
+
+;// CONCATENATED MODULE: ./src/engine/texture.js
+
+
+const { context: texture_context } = gl
+const loadedUrls = []
+const textures = []
+const transparentPixel = new Uint8Array([0, 0, 0, 0])
+
+const texture_onload = (e) => {
+  const image = e.target
+
+  if (!isPowerOf2(image.width) || !isPowerOf2(image.height)) {
+    throw new Error(`${image.src} is not power of 2`)
+  }
+  
+  const index = +image.id
+
+  texture_context.activeTexture(texture_context.TEXTURE0 + index)
+  texture_context.bindTexture(texture_context.TEXTURE_2D, textures[index])
+
+  texture_context.texImage2D(
+    texture_context.TEXTURE_2D,    /* target */
+    0,                /* level */
+    texture_context.RGBA,          /* internalFormat */
+    texture_context.RGBA,          /* format */
+    texture_context.UNSIGNED_BYTE, /* type */
+    image)
+
+  texture_context.texParameteri(texture_context.TEXTURE_2D, texture_context.TEXTURE_MAG_FILTER, texture_context.NEAREST)
+  texture_context.texParameteri(texture_context.TEXTURE_2D, texture_context.TEXTURE_MIN_FILTER, texture_context.NEAREST)
+  texture_context.generateMipmap(texture_context.TEXTURE_2D)
+}
+
+const isPowerOf2 = (val) => {
+  return (val & (val - 1)) == 0
+}
+
+const texture_onerror = (err) => {
+  throw new Error(err)
+}
+
+const load = (url) => {
+  // check if the texture is loaded and return the index
+  const urlIndex = loadedUrls.indexOf(url)
+
+  if (urlIndex > -1) return urlIndex
+
+  // create and bind the texture to a new slot
+  const index = textures.length
+  const texture = texture_context.createTexture()
+
+  texture_context.activeTexture(texture_context.TEXTURE0 + index)
+  texture_context.bindTexture(texture_context.TEXTURE_2D, texture)
+  textures.push(texture)
+
+  // temporarily set a transparent pixel for the texture until it loads
+  texture_context.texImage2D(
+    texture_context.TEXTURE_2D,    /* target */
+    0,                /* level */
+    texture_context.RGBA,          /* internalFormat */
+    1,                /* width */
+    1,                /* height */
+    0,                /* border */
+    texture_context.RGBA,          /* format */
+    texture_context.UNSIGNED_BYTE, /* type */
+    transparentPixel)
+
+  // Load the image for the texture
+  const image = new Image()
+  image.id = index
+  image.onload = texture_onload
+  image.onerror = texture_onerror
+  image.src = url
+  loadedUrls.push(url)
+
+  return index
+}
+
+const set = (index, uSamplerLocation) => {
+  texture_context.activeTexture(texture_context.TEXTURE0 + index)
+  texture_context.bindTexture(texture_context.TEXTURE_2D,  textures[index])
+  texture_context.uniform1i(uSamplerLocation, index)
+}
+
+const texture = {
+  load,
+  set
+}
+;// CONCATENATED MODULE: ./src/objects/sprite.js
+
+
+
+
+const template = new Float32Array([
+  -1, +1, // 0 lb    2---3
+  +1, +1, // 1 rb    |   |
+  -1, -1, // 2 lt    |   |
+  +1, -1, // 3 rt    0---1
+])
+
+const indices = new Uint16Array([3, 2, 0, 3, 0, 1])
+
+const sprite = (
+  filename,
+  width,
+  height,
+  frames = 1,
+  animations,
+  tex
+) => {
+  const halfWidth = width / 2.0
+  const halfHeight = height / 2.0
+  const positions = new Float32Array(template)
+  const vaos = []
+
+  for (let i = 0; i < positions.length; i+= 2) {
+    positions[i + 0] *= halfWidth
+    positions[i + 1] *= halfHeight
+  }
+
+  const tw = tex.width
+  const th = tex.height
+  const w = tex.frameWidth / tw
+  const h = tex.frameHeight / th
+  const nHoriz = tw / tex.frameWidth
+
+  
+
+  for (let x = 0.0, y = 0.0, i = 0; i < frames; i++) {
+    x = (i * w) % nHoriz
+    y = ((i / nHoriz) | 0) * h 
+
+    const data = new Float32Array([
+      x + 0 + 0.001, y + 0 + 0.001,
+      x + w - 0.001, y + 0 + 0.001,
+      x + 0 + 0.001, y + h - 0.001,
+      x + w - 0.001, y + h - 0.001
+    ])
+
+    vaos.push(initVao('sprite', indices, [
+      {
+        name: 'aVertexPosition',
+        data: positions,
+        size: 2,
+      }, {
+        name: 'aTexturePosition',
+        data: data,
+        size: 2
+      }
+    ]))
+  }
+
+  const sprite = {
+    ...object(),
+
+    // Sprite props
+    animations,
+
+    sprite: true,
+    animating: false,
+    currentAnimation: animations !== undefined
+      ? animations.idle
+      : undefined,
+    vaos,
+    vao: vaos[0],
+    numIndices: indices.length,
+    textureId: texture.load(`./sprites/sheets/${filename}.png`),
+    step: 0,
+    lastStepTime: 0.0,
+  }
+
+  sprite.box.w = width
+  sprite.box.h = height
+  sprite.box.d = 1
+
+  sprite.translation.y = halfHeight
+
+  updateMatrix(sprite)
+
+  return sprite
+}
+
+function setAnimation (sprite, name) {
+  sprite.currentAnimation = sprite.animations[name]
+  sprite.step = sprite.currentAnimation.start
+  sprite.vao = sprite.vaos[sprite.step]
+}
+
+function updateSprite (sprite, elapsedMS) {
+  const anim = sprite.currentAnimation
+
+  if (anim === undefined) {
+    return
+  }
+
+  sprite.lastStepTime += elapsedMS
+
+  if (sprite.lastStepTime <= anim.speed) {
+    return
+  }
+
+  if (sprite.step === anim.start && sprite.animating === false) {
+    return
+  }
+
+  sprite.lastStepTime = 0
+
+  if (sprite.animating === false || sprite.step === anim.end) {
+    if (anim.fillMode === 'forwards') return
+    sprite.step = anim.start
+  } else {
+    sprite.step += 1
+  }
+
+  sprite.vao = sprite.vaos[sprite.step]
+}
+
+;// CONCATENATED MODULE: ./src/input/index.js
+
+const INPUT = {
+  up: 'w',
+  left: 'a',
+  down: 's',
+  right: 'd',
+  punch: ' '
+}
+
+const inputs = new Set()
+
+window.addEventListener('keydown', (e) => {
+  inputs.add(e.key.toLowerCase())
+}, {passive: true})
+
+window.addEventListener('keyup', (e) => {
+  inputs.delete(e.key.toLowerCase())
+}, {passive: true})
+
+
+;// CONCATENATED MODULE: ./src/actors/player.js
+
+
+
+const SPEED_WALK = 1.6
+const SPEED_RUN = 3.0
+const PUNCH_TIME = 300.0
+
+let x = 0.0, lx = 0.0
+let accumulator = 0.0
+let punchtime = 0.0
+
+const setRunAnimation = (x, lx) => {
+  if (x > 0.0) {
+    setAnimation(player, 'run_right')
+    player.direction = 1
+  } else if (x < 0.0) {
+    setAnimation(player, 'run_left')
+    player.direction = -1
+  } else if (lx > 0.0) {
+    setAnimation(player, 'idle_right')
+    player.direction = 1
+  } else if (lx < 0.0) {
+    setAnimation(player, 'idle_left')
+    player.direction = -1
+  }
+}
+
+const player_update = (dt) => {
+  accumulator += dt
+  punchtime += dt
+
+  if (accumulator < 40.0) return
+
+  accumulator = 0.0
+  x = 0.0
+
+  if (player.control === false) return
+
+  // Set player speed
+  for (const input of inputs) {
+    console.log(input)
+    switch (input) {
+      case INPUT.left:
+        x = -player.speed
+        break
+      case INPUT.right:
+        x = player.speed
+        break
+    }
+  }
+
+  if (inputs.has(INPUT.punch) && player.punching === false) {
+    player.punching = true
+    setAnimation(player, player.direction > 0 ? 'punch_right' : 'punch_left')
+    return
+  }
+
+  if (player.punching && punchtime > PUNCH_TIME) {
+    player.punching = false
+    setRunAnimation(player.velocity.x, lx)
+  }
+
+  if (lx !== x) {
+    setRunAnimation(x, lx)
+    player.velocity.x = x
+  }
+
+  lx = x
+}
+
+const player = {
+  ...sprite(
+    'dad', /* filename */
+    32,    /* width */
+    32,    /* height */
+    20,    /* frames */
+    /* animations */
+    {      
+      idle_right: {start: 0, end: 0, speed: 2000},
+      idle_left: {start: 1, end: 1, speed: 2000},
+      run_left: {start: 2, end: 8, speed: 80},
+      run_right: {start: 9, end: 15, speed: 80},
+      punch_right: {start: 16, end: 17, speed: PUNCH_TIME},
+      punch_left: {start: 18, end: 19, speed: PUNCH_TIME}
+    },
+    /* texture */
+    {width: 256, height: 128, frameWidth: 32, frameHeight: 32}
+  ),
+
+  speed: SPEED_WALK,
+  static: false,
+  physics: true,
+  animating: true,
+  punching: false,
+  control: true,
+  direction: 1,
+  update: player_update
+}
+
+player.translation.z = 0.6
+
+
+window.addEventListener('blur', () => {
+  player.velocity.x = 0.0
+}, { passive: true })
+
+;// CONCATENATED MODULE: ./src/engine/util.js
+const shuffleArray = (array) => {
+  for (let i = array.length - 1, j, t; i > 0; --i) {
+    j = Math.floor(Math.random() * (i + 1))
+    t = array[i]
+    array[i] = array[j]
+    array[j] = t
+  }
+}
+
+;// CONCATENATED MODULE: ./src/engine/text.js
+
+
+const textEl = document.getElementById('inspiration')
+const bottomTextEl = document.getElementById('bottomtext')
+
+const quotes = [
+  'HOME IS WHERE YOUR FIST IS.',
+  'YOU\'VE NEVER FELT SO ALIVE.',
+  'HOME IS THE NICEST WORD THERE IS.',
+  'YOU WONDER WHAT\'S FOR DINNER.',
+  'FOLLOW YOUR BLISS.',
+  'WE ARE WHO WE ARE.',
+  'HOME IS NOT A PLACE. IT\'S A FEELING.',
+  'JUST GO WITH THE FLOW.',
+  'IT\'S PAST THEIR BEDTIME.',
+  'THERE\'S NO PLACE LIKE HOME.',
+  'AGE IS JUST A NUMBER.',
+  'WE\'LL ALL BE LAUGHING ABOUT THIS SOON.',
+  'DON\'T FORGET TO PAY THE MORTGAGE.', 
+  'THINGS COULD BE WORSE.',
+  'TAKE LEMONS AND MAKE LEMONADE.',
+  'YOU\'LL REGRET THE THINGS YOU DIDN\'T DO.',
+  'THE AZALEAS NEED TO BE WATERED.',
+  'WORK HARD, PLAY HARD.',
+  'GOTTA FIX THAT CREAKY FLOORBOARD.',
+  'SOMETIMES YOU JUST GOTTA EAT THE HAM SANDWICH.',
+  'REX IS DUE FOR A CHECKUP.',
+  'FIND OUT IF THIS IS TAX DEDUCTABLE'
+  // HOME IS NO PLACE FOR ARMCHAIR PHILOSOPHERS
+]
+
+const order = []
+
+const len = quotes.length
+let id1 = -1, id2 = -1
+
+function restart () {
+  for (let i = 0, l = len; i < l; i++) {
+    order.push(i)
+  }
+
+  shuffleArray(order)
+}
+
+function inspire () {
+  if (order.length === 0) restart()
+
+  textEl.innerText = quotes[order.pop()]
+  id2 = setTimeout(function () {
+    textEl.innerText = ''
+  }, 7000)
+}
+
+function startInspire () {
+  id1 = setInterval(inspire, 10000)
+}
+
+function endInspire () {
+  clearTimeout(id1)
+  clearTimeout(id2)
+  textEl.innerText = ''
+}
+
+function displayText (text, bottomText) {
+  textEl.innerText = text || ''
+  bottomTextEl.innerText = bottomText || ''
+}
+
+;// CONCATENATED MODULE: ./src/scenes/fury_level.js
+const furylevelContainer = document.getElementById('furylevel-container')
+const furyElStyle = document.getElementById('furylevel').style
+const furylevelContainerStyle = furylevelContainer.style
+
+const dec = 0.0011
+const fury_level_inc = 0.0025
+
+let furylevel = 1.0
+let isActive = false
+
+const fury_level_update = (punches) => {
+  if (!isActive) return 1.0
+
+  let mult = punches === 0
+    ? 0
+    : punches === 2
+    ? 3
+    : punches === 3
+    ? 6
+    : punches >= 4
+    ? 9
+    : 1
+
+  furylevel -= (punches === -1 ? dec * 10 : dec)
+  furylevel += (fury_level_inc * mult)
+
+  if (furylevel > 1.0) {
+    furylevel = 1.0
+  }
+
+  const r1 = Math.random()
+  const r2 = Math.random()
+  const x = (((1 - furylevel) * 10)) * Math.random()
+  const y = (((1 - furylevel) * 10)) * Math.random()
+
+  furylevelContainerStyle.transform = `translate(${x}px, ${y}px)`
+  furyElStyle.transform = `scale(${furylevel}, 1)`
+
+  return furylevel
+}
+
+const show = (toShow) => {
+  isActive = toShow
+
+  if (toShow) {
+    furylevelContainer.classList.add('animating', 'shown')
+    setTimeout(function () {
+      furylevelContainer.classList.remove('animating')
+    }, 400)
+  } else {
+    furylevelContainer.classList.add('animating')
+    furylevelContainer.classList.remove('shown')
+  }
+}
+
+const furyMeter = {
+  update: fury_level_update,
+  show 
+}
+;// CONCATENATED MODULE: ./src/engine/audio.js
+const files = []
+const toPlay = {}
+
+let audio_context
+
+const start = (file, loop, vol) => {
+  file.source = audio_context.createBufferSource()
+  file.source.buffer = file.buffer
+  file.source.loop = loop || false
+  file.source.connect(file.gainNode)
+
+  file.gainNode.gain.value = vol
+  file.source.start(1)
+}
+
+const crossfade = (val, max, el) => {
+  const x = val / max
+  // Use an equal-power crossfading curve:
+  const gain1 = Math.cos(x * 0.5 * Math.PI)
+  const gain2 = Math.cos((1.0 - x) * 0.5 * Math.PI)
+  undefined.gainNode.gain.value = gain1
+  el.gainNode.gain.value = gain2
+}
+
+const createSource = (buffer) => {
+  const gainNode = audio_context.createGain()
+  gainNode.connect(audio_context.destination)
+
+  return {source: undefined, buffer, gainNode}
+}
+
+const init = (c) => {
+  audio_context = c
+}
+
+const audio_load = async (key, url) => {
+  const response = await fetch(url)
+  const buffer = await response.arrayBuffer()
+  const data = await audio_context.decodeAudioData(buffer)
+
+  files[key] = createSource(data)
+
+  if (toPlay[key] !== undefined) {
+    start(files[key], toPlay[key].loop, toPlay[key].vol)
+    delete toPlay[key]
+  }
+}
+
+const play = (key, loop, vol) => {
+  if (files[key] === undefined) {
+    toPlay[key] = {loop, vol}
+    return
+  }
+
+  start(files[key], loop, vol)
+}
+
+const stop = (key, loop, vol) => {
+  const file = files[key]
+
+  if (file === undefined || file.source === undefined) {
+    throw new Error(`${key} is undefined`)
+  }
+
+  file.source.stop(0)
+}
+
+const audio = {
+  init,
+  load: audio_load,
+  play,
+  stop
+}
+;// CONCATENATED MODULE: ./src/scenes/main.js
+
+
+
+
+
+
+
+
+
+let nextRoomX = 0
+let translateZ = 0.1
+
+const SPEED = 0.7
+const ROOM_WIDTH = 48 * 3
+const VOLUME = 0.8
+const BYPASS = true
+
+const teenagers = [
+  {name: 'tall_punk', frames: 6},
+  {name: 'beer_bong', frames: 6},
+  {name: 'yoga_gal', frames: 6},
+  {name: 'slice', frames: 6},
+  {name: 'hover_bro', frames: 6}
+]
+
+const bgs = [
+  {name: 'bg_bookshelf', frames: 2},
+  {name: 'bg_couch', frames: 1},
+  {name: 'bg_lamp', frames: 2},
+  {name: 'bg_plant', frames: 1},
+  {name: 'bg_wallpaper', frames: 1}
+]
+
+const sprites = new Set([player])
+const people = new Set()
+
+let shaking = false
+let main_a = 0
+let numKilled = 0
+let didLose = false
+let didIntro = false
+let didStart = false
+let didFirstPunch = false
+
+let home
+
+const createScene = (first) => {
+  const r1 = (Math.random() * bgs.length - 1) | 0
+  const r2 = (Math.random() * bgs.length - 1) | 0
+  const r3 = (Math.random() * bgs.length - 1) | 0
+
+  const p1 = createRoom(bgs[r1], nextRoomX)
+  const p2 = createRoom(bgs[r2], nextRoomX + 48)
+  const p3 = createRoom(bgs[r3], nextRoomX + 48 + 48)
+
+  nextRoomX += ROOM_WIDTH
+
+  sprites.add(p1)
+  sprites.add(p2)
+  sprites.add(p3)
+
+  if (first) {
+    const person = createPerson(teenagers[0], ROOM_WIDTH / 2)
+    people.add(person)
+    sprites.add(person)
+  }
+
+  for (const teenager of teenagers) {
+    const x = 32 + (Math.random() * (ROOM_WIDTH - 32)) + nextRoomX
+
+    const person = createPerson(teenager, x)
+
+    people.add(person)
+    sprites.add(person)
+  }
+}
+
+const createSprite = (name, w, h, x, texture) => {
+  const item = {
+    ...sprite(
+      name,   /* filename */
+      w,      /* width */
+      h,      /* height */
+      1,
+      undefined,
+      texture
+    ),
+    static: true
+  }
+
+  item.translation.x = (w / 2) + x
+  item.translation.z = -0.1
+  updateMatrix(item)
+
+  return item
+}
+
+const createRoom = (info, x) => {
+  const room = {
+    ...sprite(
+      info.name,   /* filename */
+      48,          /* width */
+      48,          /* height */
+      info.frames, /* frames */
+      {idle: {start: 0, end: info.frames - 1, speed: 200}},
+      {width: 64 * info.frames, height: 64, frameWidth: 48, frameHeight: 48}
+    ),
+    static: frames > 1
+  }
+
+  room.translation.x = (48 / 2) + x
+  updateMatrix(room)
+
+  return room
+}
+
+const setTranslateZ = () => {
+  if (translateZ === 0.5) {
+    translateZ = 0.1
+  } else {
+    translateZ += 0.1
+  }
+
+  return translateZ
+}
+
+const startPersonAnim = (person) => {
+  person.animating = true
+}
+
+const createPerson = (info, x) => {
+  const person = {
+    ...sprite(
+      info.name,
+      32,
+      32,
+      info.frames,
+      // animations
+      {
+        idle: {start: 0, end: 1, speed: 400},
+        fly: {start: 2, end: 2, speed: 400}
+      },
+      // texture
+      {width: 128, height: 64, frameWidth: 32, frameHeight: 32}
+    ),
+    dead: false,
+    timeDead: 0.0,
+    static: false,
+  }
+
+  setTimeout(startPersonAnim, Math.random() * 3000, person)
+
+  person.translation.z = setTranslateZ()
+  person.translation.x = x || 0
+  updateMatrix(person)
+
+  return person
+}
+
+const setEvent = (time, config) => {
+  setTimeout(onEvent, time * 1000, config)
+}
+
+const onEvent = (config) => {
+  if (config.text !== undefined) {
+    displayText(config.text, config.text2)
+    if (config.dur !== undefined) {
+      setTimeout(onTextEnd, config.dur * 1000)
+    }
+  }
+
+  if (config.control !== undefined) {
+    player.control = config.control
+  }
+
+  if (config.fn !== undefined) {
+    config.fn()
+  }
+}
+
+const onTextEnd = () => {
+  displayText('')
+}
+
+const main_init = () => {
+  player.control = BYPASS
+  player.translation.x = -80
+  audio.play('intro', true, VOLUME)
+
+  sprites.add(createSprite('car', 96, 48, -180, {width: 64, height: 32, frameWidth: 64, frameHeight: 32}))
+
+  home = createSprite('home', 128, 128, -20, {width: 64, height: 64, frameWidth: 64, frameHeight: 64})
+  sprites.add(home)
+
+  setEvent( 3.0, {dur: 3.0, text: '"I\'m glad I cancelled that trip to Milwaukee."'})
+  setEvent( 7.5, {dur: 3.0, text: '"...and didn\'t tell the kids."'})
+  setEvent(12.0, {dur: 3.0, text: '"They\'ll be so delighted and surprised."'})
+  setEvent(16.5, {dur: 3.0, text: '<- A D ->', control: true, fn: () => {
+    setAnimation(player, 'run_right')
+    player.velocity.x = 1.6
+  }})
+}
+
+const playRandomPunch = (v = VOLUME) => {
+  audio.play(`hit_${Math.random() * 5 | 0}`, false, v)
+}
+
+const startIntro = () => {
+  audio.stop('intro')
+  audio.play('crowd', true, VOLUME - 0.4 < 0.0 ? 0.0 : VOLUME - 0.4)
+  displayText('')
+
+  window.nightsky.style.display = 'none'
+  sprites.delete(home)
+
+  createScene(true)
+  createScene()
+
+  setTimeout(() => {
+    player.velocity.x = 0.0
+    setAnimation(player, 'idle_right')
+  }, 200)
+  
+  player.control = false
+  didIntro = true
+
+  setEvent(2.5, {dur: 2.5, text: '"Sup bro?"'})
+  setEvent(6.0, {dur: 2.5, text: '...'})
+  setEvent(9.0, {dur: 2.5, text: '"Aren\'t you a little old for this party?"'})
+
+  setEvent(12.0, {text: 'PUNCH.', fn: playRandomPunch})
+  setEvent(12.5, {text: 'PUNCH. THIS.', fn: playRandomPunch})
+  setEvent(13.0, {text: 'PUNCH. THIS. GUY.', fn: playRandomPunch})
+  setEvent(13.5, {dur: 0.5, text: 'PUNCH. THIS. GUY. [spacebar]', fn: playRandomPunch})
+
+  setTimeout(startGame, 14 * 1000)
+}
+
+const startGame = () => {
+  displayText('')
+  audio.play('party', true, VOLUME)
+  
+  player.control = true
+  player.velocity.x = 1.6
+  setAnimation(player, 'run_right')
+  didStart = true
+}
+
+const onFirstPunch = () => {
+  furyMeter.show(true)
+  setEvent( 4.0, {dur: 3.0, text: 'MAINTAIN YOUR PARENTAL FURY.'})
+  setEvent( 8.0, {fn: () => startInspire() })
+}
+
+const endGame = () => {
+  audio.stop('party')
+  audio.play('fail', true, VOLUME)
+
+  gl.canvas.classList.add('game-over')
+
+  player.velocity.x = 0
+  setAnimation(player, 'idle_right')
+
+  endInspire()
+
+  furyMeter.show(false)
+
+  camera.setZoom(180.0, 1500)
+  camera.setShake(0.0, 0.0)
+
+  setEvent(2.0, {text: `YOU VANQUISHED ${numKilled} PARTYGOERS`})
+  setEvent(4.0, {text: `YOU VANQUISHED ${numKilled} PARTYGOERS`, text2: 'BEFORE YOU LOST YOUR PASSION'})
+  setEvent(4.0, {fn: () => {
+    const reload = () => location.reload(false)
+    document.addEventListener('touchstart', reload)
+    document.addEventListener('keydown', reload)
+    document.addEventListener('click', reload)
+  }})
+}
+
+const main_update = (dt) => {
+  const { x } = player.translation
+
+  let numHit = 0
+
+  camera.update(x + 20)
+
+  if (didLose) return
+
+  player.update(dt)
+
+  if (!didIntro && x > nextRoomX) {
+    startIntro()
+  }
+
+  if (!didStart) {
+    return
+  }
+
+  if (x + window.innerWidth > nextRoomX) {
+    createScene()
+  }
+
+  for (const person of people) {
+    if (person.dead === false) continue
+  
+    person.timeDead += dt
+
+    if (person.timeDead > 2000) {
+      people.delete(person)
+      sprites.delete(person)
+    }
+  }
+
+  if (player.punching) {
+    if (!shaking) {
+      camera.setShake(0.001, 100.0)
+      shaking = true
+    }
+
+    const v = (player.velocity.x > 0 ? SPEED : -SPEED)
+
+    for (const person of people) {
+      if (person.dead) continue
+
+      if (Math.abs(x - person.translation.x) < 10) {
+        setAnimation(person, 'fly')
+
+        numHit += 1
+        numKilled += 1
+
+        person.dead = true
+        person.physics = true
+        person.velocity.x = v * 3
+
+        if (numHit === 1) {
+          person.velocity.y = 0.4
+          person.angularVelocity.z = 0.25
+        } else if (numHit === 2) {
+          person.velocity.y = 1.0
+          person.angularVelocity.z = 0.4
+          person.scaleVelocity.x = person.scaleVelocity.y = person.scaleVelocity.z = 0.01
+        } else if (numHit === 3) {
+          person.velocity.x = v * 3
+          person.velocity.y = 1.5
+          person.angularVelocity.z = 0.6
+          person.scaleVelocity.x = person.scaleVelocity.y = person.scaleVelocity.z = 0.09
+        }
+      }
+    }
+
+    if (!didFirstPunch) {
+      didFirstPunch = true
+      onFirstPunch()
+    }
+
+    if (numHit > 0) {
+      audio.play(`hit_${Math.random * 5 | 0}`, false, VOLUME)
+    }
+
+  } else {
+    if (shaking) {
+      camera.setShake(0.00001, 0.0)
+      shaking = false
+    }
+  }
+
+  if (furyMeter.update(numHit) <= 0.0) {
+    didLose = true
+    endGame()
+  }
+}
+
+const mainScene = {
+  init: main_init,
+  update: main_update,
+  startGame,
+  endGame
+}
+
+;// CONCATENATED MODULE: ./src/engine/renderer.js
+
+
+
+
+
+
+
+
+
+const { context: renderer_context } = gl
+let dt = 0.0
+let then = performance.now()
+let rafid = -1
+
+let renderer_framesPaused = true
+
+let uMatrix = m4.identity()
+
+const drawObjects = (objects) => {
+  for (const object of objects) {
+    if (object.static === false) {
+      updateMatrix(object)
+
+      if (object.physics === true) {
+        updatePhysics(object)
+      }
+
+      updateSprite(object, dt)
+    }
+
+    m4.multiply(camera.viewMatrix, object.matrix, uMatrix)
+
+    texture.set(object.textureId, programUniforms.uSampler)
+
+    renderer_context.bindVertexArray(object.vao)
+    renderer_context.uniformMatrix4fv(programUniforms.uMatrix, false, uMatrix)
+    renderer_context.drawElements(renderer_context.TRIANGLES, object.numIndices, renderer_context.UNSIGNED_SHORT, 0)
+  }
+}
+
+renderer_context.useProgram(program)
+renderer_context.uniform1f(programUniforms.uAlpha, 1.0)
+
+const tick = (now) => {
+  renderer_context.clear(renderer_context.COLOR_BUFFER_BIT | renderer_context.DEPTH_BUFFER_BIT)
+
+  dt = now - then
+  then = now
+
+  mainScene.update(dt)
+
+  drawObjects(sprites)
+
+  rafid = window.requestAnimationFrame(tick)
+}
+
+const renderer_start = () => {
+  renderer_framesPaused = false
+  rafid = window.requestAnimationFrame(tick)
+}
+
+const pause = () => {
+  renderer_framesPaused = true
+  window.cancelAnimationFrame(rafid)
+}
+
+const renderer = {
+  start: renderer_start,
+  pause
+}
+;// CONCATENATED MODULE: ./src/index.js
+
+
+
+
+const src_init = () => {
+  const Context = window.AudioContext || window.webkitAudioContext
+  audio.init(new Context())
+  renderer.start()
+  mainScene.init()
+
+  audio.load('intro', './music/intro.mp3')
+  audio.load('party', './music/party_1.mp3')
+  audio.load('fail', './music/fail.mp3')
+  audio.load('hit_0', './music/hit_1.wav')
+  audio.load('hit_1', './music/hit_2.wav')
+  audio.load('hit_2', './music/hit_3.wav')
+  audio.load('hit_3', './music/hit_4.wav')
+  audio.load('hit_4', './music/hit_5.wav')
+  audio.load('coin', './music/coin.wav')
+  audio.load('crowd', './music/crowd.wav')
+
+  let wasPaused = false
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      wasPaused = framesPaused
+      renderer.pause()
+    } else if (wasPaused === false) {
+      renderer.start()
+    }
+  }, { passive: true })
+}
+
+src_init()
+
+/******/ })()
+;

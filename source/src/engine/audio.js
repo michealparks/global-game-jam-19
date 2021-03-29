@@ -1,19 +1,19 @@
-const audio = []
+const files = []
 const toPlay = {}
 
 let context
 
-function start (audio, loop, vol) {
-  audio.source = context.createBufferSource()
-  audio.source.buffer = audio.buffer
-  audio.source.loop = loop || false
-  audio.source.connect(audio.gainNode)
+const start = (file, loop, vol) => {
+  file.source = context.createBufferSource()
+  file.source.buffer = file.buffer
+  file.source.loop = loop || false
+  file.source.connect(file.gainNode)
 
-  audio.gainNode.gain.value = vol
-  audio.source.start(1)
+  file.gainNode.gain.value = vol
+  file.source.start(1)
 }
 
-function crossfade (val, max, el) {
+const crossfade = (val, max, el) => {
   const x = val / max
   // Use an equal-power crossfading curve:
   const gain1 = Math.cos(x * 0.5 * Math.PI)
@@ -22,47 +22,52 @@ function crossfade (val, max, el) {
   el.gainNode.gain.value = gain2
 }
 
-function createSource (buffer) {
+const createSource = (buffer) => {
   const gainNode = context.createGain()
   gainNode.connect(context.destination)
 
   return {source: undefined, buffer, gainNode}
 }
 
-function arrayBuffer (res) {
-  return res.arrayBuffer()
-}
-
-export function initAudio (c) {
+const init = (c) => {
   context = c
 }
 
-export function loadAudio (key, url) {
-  fetch(url).then(arrayBuffer).then(function (buf) {
-    context.decodeAudioData(buf, function (data) {
-      audio[key] = createSource(data)
+const load = async (key, url) => {
+  const response = await fetch(url)
+  const buffer = await response.arrayBuffer()
+  const data = await context.decodeAudioData(buffer)
 
-      if (toPlay[key] !== undefined) {
-        start(audio[key], toPlay[key].loop, toPlay[key].vol)
-        delete toPlay[key]
-      }
-    })
-  })
+  files[key] = createSource(data)
+
+  if (toPlay[key] !== undefined) {
+    start(files[key], toPlay[key].loop, toPlay[key].vol)
+    delete toPlay[key]
+  }
 }
 
-export function playAudio (key, loop, vol) {
-  if (audio[key] === undefined) {
+const play = (key, loop, vol) => {
+  if (files[key] === undefined) {
     toPlay[key] = {loop, vol}
     return
   }
 
-  start(audio[key], loop, vol)
+  start(files[key], loop, vol)
 }
 
-export function stopAudio (key, loop, vol) {
-  const a = audio[key]
-  if (a === undefined) return
-  if (a.source === undefined) return
+const stop = (key, loop, vol) => {
+  const file = files[key]
 
-  a.source.stop(0)
+  if (file === undefined || file.source === undefined) {
+    throw new Error(`${key} is undefined`)
+  }
+
+  file.source.stop(0)
+}
+
+export const audio = {
+  init,
+  load,
+  play,
+  stop
 }

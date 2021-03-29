@@ -1,6 +1,6 @@
 const {resolve} = require('path')
 const webpack = require('webpack')
-const __dev__ = process.argv[2] === 'dev'
+const __dev__ = true || process.argv[2] === 'dev'
 
 const config = {
   mode: __dev__ ? 'development' : 'production',
@@ -22,7 +22,6 @@ const config = {
   devtool: false,
   plugins: [
     new webpack.optimize.ModuleConcatenationPlugin(),
-    new webpack.NamedModulesPlugin(),
     new webpack.DefinePlugin({
       '__webgl2': false,
       '__root__': JSON.stringify(__dirname),
@@ -34,13 +33,7 @@ const config = {
       '__version__': JSON.stringify(require('./package.json').version),
       '__noop__': 'function () {}'
     })
-  ],
-  stats: {
-    // Examine all modules
-    maxModules: Infinity,
-    // Display bailout reasons
-    optimizationBailout: true
-  }
+  ]
 }
 
 const report = (err, stats) => {

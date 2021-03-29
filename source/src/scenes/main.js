@@ -1,19 +1,19 @@
-import {gl} from '../engine/gl.js'
-import {camera_update, camera_setZoom, camera_setShake} from '../engine/camera.js'
-import {updateMatrix} from '../objects/index.js'
-import {player, player_update} from '../actors/player.js'
-import {sprite, setAnimation} from '../objects/sprite.js'
-import {startInspire, endInspire, displayText} from '../engine/text.js'
-import {furyLevel_update, furyLevel_show} from './fury_level.js'
-import {playAudio, stopAudio} from '../engine/audio.js'
+import { gl } from '../engine/gl.js'
+import { camera } from '../engine/camera.js'
+import { updateMatrix } from '../objects/index.js'
+import { player } from '../actors/player.js'
+import { sprite, setAnimation } from '../objects/sprite.js'
+import { startInspire, endInspire, displayText } from '../engine/text.js'
+import { furyMeter } from './fury_level.js'
+import { audio } from '../engine/audio.js'
 
 let nextRoomX = 0
 let translateZ = 0.1
 
-const SPEED = 1.8
+const SPEED = 0.7
 const ROOM_WIDTH = 48 * 3
 const VOLUME = 0.8
-const BYPASS = false
+const BYPASS = true
 
 const teenagers = [
   {name: 'tall_punk', frames: 6},
@@ -31,26 +31,20 @@ const bgs = [
   {name: 'bg_wallpaper', frames: 1}
 ]
 
-export const sprites = [player]
-export const people = []
+export const sprites = new Set([player])
+export const people = new Set()
 
 let shaking = false
-let a = 0, b = 0
+let a = 0
 let numKilled = 0
 let didLose = false
-let didPregame = false
+let didIntro = false
 let didStart = false
 let didFirstPunch = false
 
 let home
 
-function removeSprite (sprite) {
-  const index = sprites.indexOf(sprite)
-
-  if (index > -1) sprites.splice(index, 1)
-}
-
-function createScene (first) {
+const createScene = (first) => {
   const r1 = (Math.random() * bgs.length - 1) | 0
   const r2 = (Math.random() * bgs.length - 1) | 0
   const r3 = (Math.random() * bgs.length - 1) | 0
@@ -61,25 +55,27 @@ function createScene (first) {
 
   nextRoomX += ROOM_WIDTH
 
-  sprites.push(p1, p2, p3)
+  sprites.add(p1)
+  sprites.add(p2)
+  sprites.add(p3)
 
   if (first) {
     const person = createPerson(teenagers[0], ROOM_WIDTH / 2)
-    people.push(person)
-    sprites.push(person)
+    people.add(person)
+    sprites.add(person)
   }
 
-  for (let x, i = 0; i < teenagers.length; i++) {
-    x = 32 + (Math.random() * (ROOM_WIDTH - 32)) + nextRoomX
+  for (const teenager of teenagers) {
+    const x = 32 + (Math.random() * (ROOM_WIDTH - 32)) + nextRoomX
 
-    const person = createPerson(teenagers[i], x)
+    const person = createPerson(teenager, x)
 
-    people.push(person)
-    sprites.push(person)
+    people.add(person)
+    sprites.add(person)
   }
 }
 
-function createSprite (name, w, h, x, texture) {
+const createSprite = (name, w, h, x, texture) => {
   const item = {
     ...sprite(
       name,   /* filename */
@@ -99,7 +95,7 @@ function createSprite (name, w, h, x, texture) {
   return item
 }
 
-function createRoom (info, x) {
+const createRoom = (info, x) => {
   const room = {
     ...sprite(
       info.name,   /* filename */
@@ -118,7 +114,7 @@ function createRoom (info, x) {
   return room
 }
 
-function setTranslateZ () {
+const setTranslateZ = () => {
   if (translateZ === 0.5) {
     translateZ = 0.1
   } else {
@@ -128,11 +124,11 @@ function setTranslateZ () {
   return translateZ
 }
 
-function startPersonAnim (person) {
+const startPersonAnim = (person) => {
   person.animating = true
 }
 
-function createPerson (info, x) {
+const createPerson = (info, x) => {
   const person = {
     ...sprite(
       info.name,
@@ -161,11 +157,11 @@ function createPerson (info, x) {
   return person
 }
 
-function setEvent (time, config) {
+const setEvent = (time, config) => {
   setTimeout(onEvent, time * 1000, config)
 }
 
-function onEvent (config) {
+const onEvent = (config) => {
   if (config.text !== undefined) {
     displayText(config.text, config.text2)
     if (config.dur !== undefined) {
@@ -182,55 +178,55 @@ function onEvent (config) {
   }
 }
 
-function onTextEnd () {
+const onTextEnd = () => {
   displayText('')
 }
 
-export function masterSceneInit () {
+export const init = () => {
   player.control = BYPASS
   player.translation.x = -80
-  playAudio('intro', true, VOLUME)
+  audio.play('intro', true, VOLUME)
 
-  sprites.push(createSprite('car', 96, 48, -180, {width: 64, height: 32, frameWidth: 64, frameHeight: 32}))
+  sprites.add(createSprite('car', 96, 48, -180, {width: 64, height: 32, frameWidth: 64, frameHeight: 32}))
 
   home = createSprite('home', 128, 128, -20, {width: 64, height: 64, frameWidth: 64, frameHeight: 64})
-  sprites.push(home)
+  sprites.add(home)
 
   setEvent( 3.0, {dur: 3.0, text: '"I\'m glad I cancelled that trip to Milwaukee."'})
   setEvent( 7.5, {dur: 3.0, text: '"...and didn\'t tell the kids."'})
   setEvent(12.0, {dur: 3.0, text: '"They\'ll be so delighted and surprised."'})
-  setEvent(16.5, {dur: 3.0, text: '<- A D ->', control: true, fn: function () {
+  setEvent(16.5, {dur: 3.0, text: '<- A D ->', control: true, fn: () => {
     setAnimation(player, 'run_right')
     player.velocity.x = 1.6
   }})
 }
 
-function playRandomPunch (v = VOLUME) {
-  playAudio(`hit_${Math.random() * 5 | 0}`, false, v)
+const playRandomPunch = (v = VOLUME) => {
+  audio.play(`hit_${Math.random() * 5 | 0}`, false, v)
 }
 
-export function startPregame () {
-  stopAudio('intro')
-  playAudio('crowd', true, VOLUME - 0.4 < 0.0 ? 0.0 : VOLUME - 0.4)
+export const startIntro = () => {
+  audio.stop('intro')
+  audio.play('crowd', true, VOLUME - 0.4 < 0.0 ? 0.0 : VOLUME - 0.4)
   displayText('')
 
   window.nightsky.style.display = 'none'
-  removeSprite(home)
+  sprites.delete(home)
 
   createScene(true)
   createScene()
 
-  setTimeout(function () {
+  setTimeout(() => {
     player.velocity.x = 0.0
     setAnimation(player, 'idle_right')
   }, 200)
   
   player.control = false
-  didPregame = true
+  didIntro = true
 
-  setEvent( 2.5, {dur: 2.5, text: '"Sup bro?"'})
-  setEvent( 6.0, {dur: 2.5, text: '...'})
-  setEvent( 9.0, {dur: 2.5, text: '"Aren\'t you a little old for this party?"'})
+  setEvent(2.5, {dur: 2.5, text: '"Sup bro?"'})
+  setEvent(6.0, {dur: 2.5, text: '...'})
+  setEvent(9.0, {dur: 2.5, text: '"Aren\'t you a little old for this party?"'})
 
   setEvent(12.0, {text: 'PUNCH.', fn: playRandomPunch})
   setEvent(12.5, {text: 'PUNCH. THIS.', fn: playRandomPunch})
@@ -240,9 +236,9 @@ export function startPregame () {
   setTimeout(startGame, 14 * 1000)
 }
 
-export function startGame () {
+const startGame = () => {
   displayText('')
-  playAudio('party', true, VOLUME)
+  audio.play('party', true, VOLUME)
   
   player.control = true
   player.velocity.x = 1.6
@@ -250,17 +246,15 @@ export function startGame () {
   didStart = true
 }
 
-function onFirstPunch () {
-  furyLevel_show(true)
+const onFirstPunch = () => {
+  furyMeter.show(true)
   setEvent( 4.0, {dur: 3.0, text: 'MAINTAIN YOUR PARENTAL FURY.'})
-  setEvent( 8.0, {fn: function () {
-    startInspire()
-  }})
+  setEvent( 8.0, {fn: () => startInspire() })
 }
 
-function endGame () {
-  stopAudio('party')
-  playAudio('fail', true, VOLUME)
+const endGame = () => {
+  audio.stop('party')
+  audio.play('fail', true, VOLUME)
 
   gl.canvas.classList.add('game-over')
 
@@ -269,127 +263,117 @@ function endGame () {
 
   endInspire()
 
-  furyLevel_show(false)
+  furyMeter.show(false)
 
-  camera_setZoom(180.0, 1500)
-  camera_setShake(0.0, 0.0)
+  camera.setZoom(180.0, 1500)
+  camera.setShake(0.0, 0.0)
 
   setEvent(2.0, {text: `YOU VANQUISHED ${numKilled} PARTYGOERS`})
   setEvent(4.0, {text: `YOU VANQUISHED ${numKilled} PARTYGOERS`, text2: 'BEFORE YOU LOST YOUR PASSION'})
-  setEvent(4.0, {fn: function () {
-    function reload () {
-      location.reload(false)
-    }
-
+  setEvent(4.0, {fn: () => {
+    const reload = () => location.reload(false)
     document.addEventListener('touchstart', reload)
     document.addEventListener('keydown', reload)
     document.addEventListener('click', reload)
   }})
 }
 
-export function masterSceneUpdate (elapsedMS) {
-  const {x} = player.translation
+const update = (dt) => {
+  const { x } = player.translation
 
-  camera_update(x + 20)
+  let numHit = 0
+
+  camera.update(x + 20)
 
   if (didLose) return
 
-  player_update(elapsedMS)
+  player.update(dt)
 
-  if (!didPregame && x > nextRoomX) {
-    startPregame()
+  if (!didIntro && x > nextRoomX) {
+    startIntro()
   }
 
   if (!didStart) {
     return
   }
 
-  b = 0
-
   if (x + window.innerWidth > nextRoomX) {
     createScene()
   }
 
-  for (let p, i = 0, l = people.length; i < l; i++) {
-    p = people[i]
+  for (const person of people) {
+    if (person.dead === false) continue
+  
+    person.timeDead += dt
 
-    if (p === undefined) continue
-    if (!p.dead) continue
-
-    p.timeDead += elapsedMS
-
-    if (p.timeDead > 2000) {
-      people.splice(i, 1)
-      removeSprite(p)
+    if (person.timeDead > 2000) {
+      people.delete(person)
+      sprites.delete(person)
     }
   }
 
   if (player.punching) {
-    b = 1
-
     if (!shaking) {
-      camera_setShake(0.001, 100.0)
+      camera.setShake(0.001, 100.0)
       shaking = true
     }
 
     const v = (player.velocity.x > 0 ? SPEED : -SPEED)
 
-    for (let r, p, i = 0, l = people.length; i < l; i++) {
-      p = people[i]
+    for (const person of people) {
+      if (person.dead) continue
 
-      if (p.dead) continue
+      if (Math.abs(x - person.translation.x) < 10) {
+        setAnimation(person, 'fly')
 
-      if (Math.abs(x - p.translation.x) < 10) {
-        setAnimation(p, 'fly')
+        numHit += 1
+        numKilled += 1
 
-        p.velocity.x = v * 2
+        person.dead = true
+        person.physics = true
+        person.velocity.x = v * 3
 
-        if (a === 1) {
-          p.velocity.y = 0.4
-          p.angularVelocity.z = 0.25
-        } else if (a == 2) {
-          p.velocity.y = 1.0
-          p.angularVelocity.z = 0.4
-          p.scaleVelocity.x = p.scaleVelocity.y = p.scaleVelocity.z = 0.01
-        } else if (a === 3) {
-          p.velocity.x = v * 3
-          p.velocity.y = 1.5
-          p.angularVelocity.z = 0.6
-          p.scaleVelocity.x = p.scaleVelocity.y = p.scaleVelocity.z = 0.09
-        }
-
-        if (!didFirstPunch) {
-          didFirstPunch = true
-          onFirstPunch()
-        }
-
-        p.dead = true
-        p.physics = true
-
-        a++
-        numKilled++
-
-        if (a === 1) {
-          playAudio(`hit_${Math.random * 5 | 0}`, false, VOLUME)
+        if (numHit === 1) {
+          person.velocity.y = 0.4
+          person.angularVelocity.z = 0.25
+        } else if (numHit === 2) {
+          person.velocity.y = 1.0
+          person.angularVelocity.z = 0.4
+          person.scaleVelocity.x = person.scaleVelocity.y = person.scaleVelocity.z = 0.01
+        } else if (numHit === 3) {
+          person.velocity.x = v * 3
+          person.velocity.y = 1.5
+          person.angularVelocity.z = 0.6
+          person.scaleVelocity.x = person.scaleVelocity.y = person.scaleVelocity.z = 0.09
         }
       }
     }
 
-  } else {
-    if (shaking) {
-      camera_setShake(0.00001, 0.0)
-      shaking = false
+    if (!didFirstPunch) {
+      didFirstPunch = true
+      onFirstPunch()
     }
 
-    a = 0
+    if (numHit > 0) {
+      audio.play(`hit_${Math.random * 5 | 0}`, false, VOLUME)
+    }
+
+  } else {
+    if (shaking) {
+      camera.setShake(0.00001, 0.0)
+      shaking = false
+    }
   }
 
-  if (b === 1 && a === 0) {
-    a = -1
-  }
-
-  if (furyLevel_update(a) <= 0.0) {
+  if (furyMeter.update(numHit) <= 0.0) {
     didLose = true
     endGame()
   }
+}
+
+export const mainScene = {
+  init,
+  update,
+  startGame,
+  endGame
 }

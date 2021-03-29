@@ -1,27 +1,23 @@
-import {gl} from './gl.js'
-import {m4_identity, m4_multiply} from '../utils/m4.js'
-import {program, programUniforms} from './programs.js'
-import {viewMatrix} from './camera.js'
-import {updatePhysics, updateMatrix} from '../objects/index.js'
-import {updateSprite} from '../objects/sprite.js'
-import {setTexture} from '../utils/texture.js'
-import {sprites, masterSceneUpdate} from '../scenes/master.js'
+import { gl } from './gl.js'
+import { m4 } from '../utils/m4.js'
+import { program, programUniforms } from './programs.js'
+import { camera } from './camera.js'
+import { updatePhysics, updateMatrix } from '../objects/index.js'
+import { updateSprite } from '../objects/sprite.js'
+import { texture } from './texture.js'
+import { sprites, mainScene } from '../scenes/main.js'
 
-let elapsedMS = 0.0
-let thenMS = performance.now()
-let tickID = -1
+const { context } = gl
+let dt = 0.0
+let then = performance.now()
+let rafid = -1
 
 export let framesPaused = true
 
-let uMatrix = m4_identity()
+let uMatrix = m4.identity()
 
-let object
-let i = 0, l = 0
-
-function drawObjects (objects) {
-  for (i = 0, l = objects.length; i < l; i++) {
-    object = objects[i]
-
+const drawObjects = (objects) => {
+  for (const object of objects) {
     if (object.static === false) {
       updateMatrix(object)
 
@@ -29,41 +25,46 @@ function drawObjects (objects) {
         updatePhysics(object)
       }
 
-      updateSprite(object, elapsedMS)
+      updateSprite(object, dt)
     }
 
-    m4_multiply(viewMatrix, object.matrix, uMatrix)
+    m4.multiply(camera.viewMatrix, object.matrix, uMatrix)
 
-    setTexture(object.textureId, programUniforms.uSampler)
+    texture.set(object.textureId, programUniforms.uSampler)
 
-    gl.bindVertexArray(object.vao)
-    gl.uniformMatrix4fv(programUniforms.uMatrix, false, uMatrix)
-    gl.drawElements(gl.TRIANGLES, object.numIndices, gl.UNSIGNED_SHORT, 0)
+    context.bindVertexArray(object.vao)
+    context.uniformMatrix4fv(programUniforms.uMatrix, false, uMatrix)
+    context.drawElements(context.TRIANGLES, object.numIndices, context.UNSIGNED_SHORT, 0)
   }
 }
 
-gl.useProgram(program)
-gl.uniform1f(programUniforms.uAlpha, 1.0)
+context.useProgram(program)
+context.uniform1f(programUniforms.uAlpha, 1.0)
 
-function gameTick (nowMS) {
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+const tick = (now) => {
+  context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
 
-  elapsedMS = nowMS - thenMS
-  thenMS = nowMS
+  dt = now - then
+  then = now
 
-  masterSceneUpdate(elapsedMS)
+  mainScene.update(dt)
 
   drawObjects(sprites)
 
-  tickID = window.requestAnimationFrame(gameTick)
+  rafid = window.requestAnimationFrame(tick)
 }
 
-export function renderer_start () {
+const start = () => {
   framesPaused = false
-  tickID = window.requestAnimationFrame(gameTick)
+  rafid = window.requestAnimationFrame(tick)
 }
 
-export function renderer_pause () {
+const pause = () => {
   framesPaused = true
-  return window.cancelAnimationFrame(tickID)
+  window.cancelAnimationFrame(rafid)
+}
+
+export const renderer = {
+  start,
+  pause
 }

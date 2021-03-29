@@ -14,10 +14,6 @@ export function distance2d (x1, y1, x2, y2) {
   return Math.sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1)))
 }
 
-function scaleBetween(n, minAllowed, maxAllowed, min, max) {
-  return (maxAllowed - minAllowed) * (n - min) / (max - min) + minAllowed;
-}
-
 export function transformVector(m4, v) {
   const dst = new Float32Array(4)
 

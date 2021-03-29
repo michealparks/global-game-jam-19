@@ -8,7 +8,8 @@ const {app, BrowserWindow} = electron
 
 let win
 
-function onFatalCrash (e) {
+const onFatalCrash = (e) => {
+  console.error('gpu process crashed')
   if (__dev__) console.error(e.stack)
 
   process.exit(1)
@@ -30,18 +31,17 @@ if (__dev__) {
   app.commandLine.appendSwitch('enable-precise-memory-info')
 }
 
-app.commandLine.appendSwitch('disable-renderer-backgrounding')
-app.commandLine.appendSwitch('js-flags', '--use_strict')
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
-app.once('ready', function () {
-  const {bounds} = electron.screen.getPrimaryDisplay()
+app.once('ready', () => {
+  const { bounds } = electron.screen.getPrimaryDisplay()
 
   win = new BrowserWindow({
     title: 'House Party',
     icon: '',
     center: true,
-    width: 1240, // bounds.width - 200,
-    height: 740, // bounds.height - 200,
+    width: bounds.width - 200,
+    height: bounds.height - 200,
     resizable: false,
     maximizable: false,
     show: false,
@@ -62,7 +62,6 @@ app.once('ready', function () {
   }))
 
   if (__dev__) {
-    return
-    win.openDevTools({mode: 'detach'})
+    win.openDevTools()
   }
 })

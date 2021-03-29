@@ -1,22 +1,22 @@
-import {m4_identity, m4_identityFrom, m4_translate, m4_rotate, m4_scale} from '../utils/m4.js'
+import { m4 } from '../utils/m4.js'
 
-export function updateMatrix (object) {
+export const updateMatrix = (object) => {
   const m = object.matrix
   const t = object.translation
   const r = object.rotation
   const s = object.scale
 
-  m4_identityFrom(object.matrix)
-  m4_translate(m, t.x, t.y, t.z)
+  m4.identityFrom(object.matrix)
+  m4.translate(m, t.x, t.y, t.z)
 
-  if (r.x !== 0.0) m4_rotate(m, r.x, 1, 0, 0)
-  if (r.y !== 0.0) m4_rotate(m, r.y, 0, 1, 0)
-  if (r.z !== 0.0) m4_rotate(m, r.z, 0, 0, 1)
+  if (r.x !== 0.0) m4.rotate(m, r.x, 1, 0, 0)
+  if (r.y !== 0.0) m4.rotate(m, r.y, 0, 1, 0)
+  if (r.z !== 0.0) m4.rotate(m, r.z, 0, 0, 1)
 
-  m4_scale(m, s.x, s.y, s.z)
+  m4.scale(m, s.x, s.y, s.z)
 }
 
-export function updatePhysics (object) {
+export const updatePhysics = (object) => {
   const t = object.translation, v = object.velocity
   t.x += v.x
   t.y += v.y
@@ -35,7 +35,7 @@ export function updatePhysics (object) {
 
 let id = -1
 
-export function object () {
+export const object = () => {
   return {
     id: ++id,
     static: true,
@@ -50,6 +50,6 @@ export function object () {
     angularVelocity: {x: 0.0, y: 0.0, z: 0.0},
     scaleVelocity: {x: 0.0, y: 0.0, z: 0.0},
 
-    matrix: m4_identity(),
+    matrix: m4.identity(),
   }
 }

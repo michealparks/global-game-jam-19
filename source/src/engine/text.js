@@ -1,4 +1,4 @@
-import {shuffleArray} from './util'
+import { shuffleArray } from './util'
 
 const textEl = document.getElementById('inspiration')
 const bottomTextEl = document.getElementById('bottomtext')
@@ -24,7 +24,8 @@ const quotes = [
   'WORK HARD, PLAY HARD.',
   'GOTTA FIX THAT CREAKY FLOORBOARD.',
   'SOMETIMES YOU JUST GOTTA EAT THE HAM SANDWICH.',
-  'REX IS DUE FOR A CHECKUP.'
+  'REX IS DUE FOR A CHECKUP.',
+  'FIND OUT IF THIS IS TAX DEDUCTABLE'
   // HOME IS NO PLACE FOR ARMCHAIR PHILOSOPHERS
 ]
 

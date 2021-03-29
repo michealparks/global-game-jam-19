@@ -1,10 +1,11 @@
-import {gl} from '../engine/gl.js'
+import { gl } from '../engine/gl.js'
 
+const { context } = gl
 const loadedUrls = []
 const textures = []
 const transparentPixel = new Uint8Array([0, 0, 0, 0])
 
-function onload (e) {
+const onload = (e) => {
   const image = e.target
 
   if (!isPowerOf2(image.width) || !isPowerOf2(image.height)) {
@@ -13,31 +14,31 @@ function onload (e) {
   
   const index = +image.id
 
-  gl.activeTexture(gl.TEXTURE0 + index)
-  gl.bindTexture(gl.TEXTURE_2D, textures[index])
+  context.activeTexture(context.TEXTURE0 + index)
+  context.bindTexture(context.TEXTURE_2D, textures[index])
 
-  gl.texImage2D(
-    gl.TEXTURE_2D,    /* target */
+  context.texImage2D(
+    context.TEXTURE_2D,    /* target */
     0,                /* level */
-    gl.RGBA,          /* internalFormat */
-    gl.RGBA,          /* format */
-    gl.UNSIGNED_BYTE, /* type */
+    context.RGBA,          /* internalFormat */
+    context.RGBA,          /* format */
+    context.UNSIGNED_BYTE, /* type */
     image)
 
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-  gl.generateMipmap(gl.TEXTURE_2D)
+  context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.NEAREST)
+  context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.NEAREST)
+  context.generateMipmap(context.TEXTURE_2D)
 }
 
-function isPowerOf2 (val) {
+const isPowerOf2 = (val) => {
   return (val & (val - 1)) == 0
 }
 
-function onerror (e) {
-  if (__dev__) console.log(e)
+const onerror = (err) => {
+  throw new Error(err)
 }
 
-export function loadTexture (url) {
+const load = (url) => {
   // check if the texture is loaded and return the index
   const urlIndex = loadedUrls.indexOf(url)
 
@@ -45,22 +46,22 @@ export function loadTexture (url) {
 
   // create and bind the texture to a new slot
   const index = textures.length
-  const texture = gl.createTexture()
+  const texture = context.createTexture()
 
-  gl.activeTexture(gl.TEXTURE0 + index)
-  gl.bindTexture(gl.TEXTURE_2D, texture)
+  context.activeTexture(context.TEXTURE0 + index)
+  context.bindTexture(context.TEXTURE_2D, texture)
   textures.push(texture)
 
   // temporarily set a transparent pixel for the texture until it loads
-  gl.texImage2D(
-    gl.TEXTURE_2D,    /* target */
+  context.texImage2D(
+    context.TEXTURE_2D,    /* target */
     0,                /* level */
-    gl.RGBA,          /* internalFormat */
+    context.RGBA,          /* internalFormat */
     1,                /* width */
     1,                /* height */
     0,                /* border */
-    gl.RGBA,          /* format */
-    gl.UNSIGNED_BYTE, /* type */
+    context.RGBA,          /* format */
+    context.UNSIGNED_BYTE, /* type */
     transparentPixel)
 
   // Load the image for the texture
@@ -74,8 +75,13 @@ export function loadTexture (url) {
   return index
 }
 
-export function setTexture (index, uSamplerLocation) {
-  gl.activeTexture(gl.TEXTURE0 + index)
-  gl.bindTexture(gl.TEXTURE_2D,  textures[index])
-  gl.uniform1i(uSamplerLocation, index)
+const set = (index, uSamplerLocation) => {
+  context.activeTexture(context.TEXTURE0 + index)
+  context.bindTexture(context.TEXTURE_2D,  textures[index])
+  context.uniform1i(uSamplerLocation, index)
+}
+
+export const texture = {
+  load,
+  set
 }

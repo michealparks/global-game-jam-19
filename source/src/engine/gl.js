@@ -1,59 +1,74 @@
-import {canvas, gl} from './gl-compat.js'
-import {m4_perspective} from '../utils/m4.js'
-import {degToRad} from '../utils/math.js'
-
-export {gl} from './gl-compat.js'
-
-function resizeCanvas () {
-  const c = gl.canvas
-  const realToCSSPixels = window.devicePixelRatio
-  const w = c.clientWidth * realToCSSPixels | 0
-  const h = c.clientHeight * realToCSSPixels | 0
-
-  if (c.width !== w || c.height !== h) {
-    c.width = w
-    c.height = h
-    aspectRatio = c.clientWidth / c.clientHeight
-    projectionMatrix = m4_perspective(fov, aspectRatio, zNear, zFar)
-
-    // Tell WebGL how to convert from clip space to pixels
-    gl.viewport(0, 0, c.width, c.height)
-  }
-}
+import { m4 } from '../utils/m4.js'
+import { degToRad } from '../utils/math.js'
+import gl2vertex from '../shaders/gl2-vertex.glsl'
+import gl2frag from '../shaders/gl2-frag.glsl'
+import vertex from '../shaders/gl1-vertex.glsl'
+import frag from '../shaders/gl1-frag.glsl'
 
 const fov = degToRad(30.0)
 const zNear = 10.0
 const zFar = 5000.0
+const canvas = document.getElementById('canvas')
+const context = canvas.getContext(__webgl2 ? 'webgl2' : 'webgl', {
+  antialias: true,
+  powerPreference: 'high-performance'
+})
 
-export let projectionMatrix
-export let aspectRatio = 0.0
+const shaders = __webgl2
+  ? {vertex: gl2vertex, frag: gl2frag}
+  : {vertex, frag}
 
-canvas.addEventListener('webglcontextlost', function (e) {
-  e.preventDefault()
-}, false)
+if (__webgl2 === false) {
+  const vaoExt = context.getExtension('OES_vertex_array_object')
+  context.createVertexArray = () => vaoExt.createVertexArrayOES()
+  context.bindVertexArray = (vao) => vaoExt.bindVertexArrayOES(vao)
+}
 
-canvas.addEventListener('webglcontextrestored', function (e) {
-  // TODO: set up webGL state and resources
-}, false)
+const resizeCanvas = () => {
+  const realToCSSPixels = window.devicePixelRatio
+  const width = canvas.clientWidth * realToCSSPixels | 0
+  const height = canvas.clientHeight * realToCSSPixels | 0
+
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width
+    canvas.height = height
+    aspectRatio = canvas.clientWidth / canvas.clientHeight
+    projectionMatrix = m4.perspective(fov, aspectRatio, zNear, zFar)
+
+    // Tell WebGL how to convert from clip space to pixels
+    context.viewport(0, 0, canvas.width, canvas.height)
+  }
+}
+
+let projectionMatrix
+let aspectRatio = 0.0
 
 resizeCanvas()
-addEventListener('resize', resizeCanvas, {passive: true})
+addEventListener('resize', resizeCanvas, { passive: true })
 
-gl.clearColor(0.0, 0.0, 0.0, 0.0)
-gl.clearDepth(1.0)
+context.clearColor(0.0, 0.0, 0.0, 0.0)
+context.clearDepth(1.0)
 
 // Turn on depth testing
-gl.enable(gl.DEPTH_TEST)
+context.enable(context.DEPTH_TEST)
 
-gl.depthFunc(gl.LEQUAL)
+context.depthFunc(context.LEQUAL)
 
-gl.depthMask(true)
+context.depthMask(true)
 
-gl.enable(gl.BLEND)
+context.enable(context.BLEND)
 
-gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+context.blendFunc(context.SRC_ALPHA, context.ONE_MINUS_SRC_ALPHA)
 
 // Tell webgl to cull faces
-gl.enable(gl.CULL_FACE)
+context.enable(context.CULL_FACE)
 
-gl.cullFace(gl.FRONT)
+context.cullFace(context.FRONT)
+
+export let gl = {
+  canvas,
+  context,
+  shaders,
+  projectionMatrix,
+  aspectRatio
+}
